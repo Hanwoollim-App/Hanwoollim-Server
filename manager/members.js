@@ -56,32 +56,6 @@ router.route('/')
             });
             db.release();
         }); 
-    })
-    .put((req, res, next) => {
-        pool.getConnection((err, db) => {
-            if(err) throw err;
-            let studentid = req.body.studentid;
-            let position = req.body.position;
-            let sql = `UPDATE MEMBER SET POSITION = ? 
-            WHERE STUDENTID = ?`;
-
-            if(position === 0){
-                db.query(sql, [position, studentid], (err, rows) => {
-                    if(err) throw err;
-
-                    req.session.destroy();
-                    res.redirect(302, '/');
-                });
-            }
-            else{
-                db.query(sql, [position, studentid], (err, rows) => {
-                    if(err) throw err;
-
-                    res.redirect(200, '/manager/members');
-                });
-            }
-            db.release();
-        });
     });
 
 module.exports = router;
