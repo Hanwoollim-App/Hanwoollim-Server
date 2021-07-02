@@ -1,12 +1,15 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const router = express.Router();
-const pool = require('../db'); // 데이터 설정이 있는 파일
+const pool = require('../db'); // 데이터베이스 설정
 const home = require('./manager_home');
 var session = require('express-session'); //세션
 var cookieParser = require('cookie-parser'); //쿠키
 
-const kakao = {
+
+// 참고 
+/*https://velog.io/@nara7875/Node.js-kakao-login-api-%EA%B0%80%EC%A0%B8%EC%98%A4%EA%B8%B0*/
+const kakao = { // 임의로 만든 KAKAO DATABASE  
     clientID: 'leejaeman0227',         /*  '카카오에서 받은clientID'  */
     clientSecret: '카카오에서 받은 clientSecret',
     redirectUri: '카카오에서 설정한 redirectUri'
@@ -24,7 +27,6 @@ router.use(express.json());
 router.use(cookieParser());
 
 router.use(session({
-    userid: null, // 사용자 식별자를 새로 만들어준다.
     resave: false, 
     saveUninitialized: true, //초기화 되지 않은 세션을 강제로 저장한다. 이는 모든 방문자들에게 고유한 식별 값을 주는 것과 같다.
     secret: 'secret code', 
@@ -62,9 +64,9 @@ router.get('/', (req, res, next) => {
 
     if (Idexsist == true) {
         res.status(200); // 로그인 성공시
-        router.use('/home', home);
-        console.log(req.session);
+        router.use('/manager_home', home);
         res.redirect('/manager/home'); // home으로 리다이렉트
+        return;
     } else {
         res.status(302); // 로그인 실패시
         res.redirect('/manager'); // 로그인 페이지로 이동

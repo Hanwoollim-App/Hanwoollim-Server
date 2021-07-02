@@ -12,11 +12,12 @@ const router = express.Router();
 console.log('manager_home 접근');
 
 router.get('/', (req, res) => {
-    if (!req.session.userid) {
-        return res.status(302).send("authenticateFailedUser");
-    }else{
-        console.log(req.session.userid);
-    }
+    // if (!req.session.userid) {
+    //     return res.status(302).send("authenticateFailedUser");
+    // }else{
+    //     console.log(req.session.userid);
+    // }
+    res.send("dd");
 });
 
 
