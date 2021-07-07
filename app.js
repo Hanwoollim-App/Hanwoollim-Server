@@ -25,17 +25,12 @@ app.use(session({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-//app.use(bodyPaser.json());
 
 //DB 연결테스트
 pool.getConnection((err, db) => {
     if(err) throw err;
     console.log('Database "hanwoolimserver" Connected');
     db.release();
-});
-
-app.get('/', (req, res) => {
-    res.send('Hello Hanwoolim!');
 });
 
 app.use('/user', user);
