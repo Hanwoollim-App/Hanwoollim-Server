@@ -17,7 +17,7 @@ router.get('/', (req, res) => {
     // }else{
     //     console.log(req.session.userid);
     // }
-    res.send("dd");
+    res.send("");
 });
 
 
