@@ -14,13 +14,13 @@ router.use('/reservation', reservation);
 
 router.get('/', (req, res, next) => {
     // session이 undefined일 경우 무언가 문제가 생긴 것이므로 '/user'로 쏴서 재로그인을 요구합니다.
-    if(req.session === undefined){
+    if(req.session.kakaoid === undefined){
         res.redirect(302, '/user');
     }
     else{
         pool.getConnection((err, db) => {
             if(err) throw err;
-            let sql = `SELECT * FROM WHERE KAKAOID = ?`;
+            let sql = `SELECT * FROM MEMBER WHERE KAKAOID = ?`;
         
         // 유저가 모종의 이유로 session_id가 변경되었을 때 이전에 사용하던 session_id에 해당하는 
         // sessions테이블의 row는 적체됩니다. 따라서 1명의 유저는 1개의 sessions테이블 row만 차지하도록
@@ -36,8 +36,10 @@ router.get('/', (req, res, next) => {
             // 4. push메소드에 기반했기 때문에, 가장 마지막에 들어온 session_id는 현재 사용자의 session_id이다.
             
                 rows.forEach(row => {
-                    if(req.session.kakaoid === row.DATA.session.kakaoid){
-                        let session_id = row.SESSION_ID;
+                    let data = JSON.parse(row.data);
+
+                    if(req.session.kakaoid === data.kakaoid){
+                        let session_id = row.session_id;
                         sessions.push(session_id);
                     }
                 });
@@ -46,7 +48,7 @@ router.get('/', (req, res, next) => {
                     let i = 0;
 
                     // 가장 마지막 session_id는 현재 유저의 id이므로 삭제하지 않기 위해 session.length - 1을 한다.
-                    while(i < session.length - 1){
+                    while(i < sessions.length - 1){
                         db.query(`DELETE FROM SESSIONS WHERE SESSION_ID = ?`, [sessions[i]], (err, rows) => {
                             if(err) throw err;
                         });

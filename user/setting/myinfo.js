@@ -6,7 +6,7 @@ const pool = require('../../db');
 router.route('/')
     .get((req, res, next) => {
         // session이 undefined일 경우 무언가 문제가 생긴 것이므로 '/user'로 쏴서 재로그인을 요구합니다.
-        if(req.session === undefined){
+        if(req.session.kakaoid === undefined){
             res.redirect(302, '/user');
         }
         else{
@@ -34,7 +34,7 @@ router.route('/')
             
             // 학번이 중복되지 않았을 경우 statusCode가 null이고
             // 중복되었을 경우엔 400이므로 패스합니다.
-            if(res.statusCode === null){
+            if(res.statusCode === 200){
                 let sql = `UPDATE MEMBER 
                 SET MEMBERNAME = ?, STUDENTID = ?, MAJOR = ?
                 WHERE KAKAOID = ?`;

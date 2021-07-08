@@ -11,7 +11,7 @@ router.use('/withdraw', withdraw);
 router.route('/')
     .get((req, res, next) => {
         // session이 undefined라면 문제가 생긴 것이므로 '/user'로 쏴서 재로그인을 요구합니다.
-        if(req.session === undefined){
+        if(req.session.kakaoid === undefined){
             res.redirect(302, '/user');
         }
         else{
