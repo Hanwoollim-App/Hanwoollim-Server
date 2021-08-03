@@ -10,7 +10,7 @@ module.exports = function(app) {
         next();
     });
 
-    app.get("/user/home", [authJwt.verifyToken], controller.userHome);
+    app.get("/user/home", [authJwt.verifyToken, authJwt.isApproved], controller.userHome);
     app.get("/manager/admin_home", [authJwt.verifyToken, authJwt.isAdmin], controller.adminHome);
     app.get("/manager/chairman_home", [authJwt.verifyToken, authJwt.isChairman], controller.chairmanHome);
 };

@@ -142,7 +142,7 @@ exports.managerSignin = (req, res) => {
                     res.redirect('/manager/chairman_home');
                 } else{
                     res.status(200);
-                    res.redirect('/manager/admin_home');
+                    res.redirect('/manager/reservation'); // 유저가 접속할 경우 회장 또는 관리자가 아닙니다 경고를 보내는 페이지
                 }
             });
 

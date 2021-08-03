@@ -52,7 +52,7 @@ isAdmin = (req, res, next) => {
 isChairman = (req, res, next) => {
     User.findOne({ where: { id: req.userId } }).then(user => {
         user.getPositions().then(positions => {
-            for (let i = 0; i< positions.length; i++) {
+            for (let i = 0; i < positions.length; i++) {
                 if (positions[i].name === "chairman") {
                     next();
                     return;
@@ -62,20 +62,16 @@ isChairman = (req, res, next) => {
             res.status(403).send({
                 message: "회장이 아닙니다!"
             });
+            return;
         });
     });
 };
 
-isAdminorChairman = (req, res, next) => {
+isAdminOrChairman = (req, res, next) => {
     User.findOne({ where: { id: req.userId } }).then(user => {
         user.getPositions().then(positions => {
             for (let i = 0; i < positions.length; i++) {
-                if (positions[i].name === "chairman") {
-                    next();
-                    return;
-                }
-
-                if (positions[i].name === "admin") {
+                if (positions[i].name === "chairman" || positions[i].name === "admin") {
                     next();
                     return;
                 }
@@ -84,15 +80,33 @@ isAdminorChairman = (req, res, next) => {
             res.status(403).send({
                 message: "회장 또는 관리자가 아닙니다!"
             });
+            return;
         });
     });
 };
 
+isApproved = (req, res, next) => {
+    User.findOne({ where: { id: req.userId } }).then(user => {
+        user.getPositions().then(positions => {
+            for (let i = 0; i< positions.length; i++) {
+                if (positions[i].name === "not_approved") {
+                    res.redirect('/user/not_approved');
+                }
+            }
+
+            //next(); // next를 하면 이 미들웨어를 넘어가고, 'not_approved로 redirect' + '다음페이지를 불러오기'가 돼서 오류가 뜬다.
+            return;
+        });
+    });
+};
+
+
 const authJwt = {
     verifyToken: verifyToken,
+    isApproved: isApproved,
     isAdmin: isAdmin,
     isChairman: isChairman,
-    isAdminorChairman: isAdminorChairman
+    isAdminOrChairman: isAdminOrChairman
 };
 
 module.exports = authJwt;

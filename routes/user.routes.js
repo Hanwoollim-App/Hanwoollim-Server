@@ -1,16 +1,22 @@
 const express = require('express');
 const router = express.Router();
+const { authJwt } = require("../middleware");
+const controller = require("../controllers/userpage.controller");
 
-router.get("/", (req, res) => {
-    res.json({ message: "This is the main page of 'Hanwoolim-User' application."});
-});
+router.get("/", controller.root);
 
-router.get("/signin", (req, res) => {
-    res.json({ message: "유저용 앱 로그인 페이지."});
-});
+router.get("/signin", controller.signin);
 
-router.get("/not_approved", (req, res) => {
-    res.json({ message: "아직 승인되지 않은 계정입니다."});
-});
+router.get("/not_approved", [authJwt.verifyToken], controller.not_approved);
+
+router.get("/gathering", [authJwt.verifyToken, authJwt.isApproved], controller.gathering);
+
+router.get("/reservation", [authJwt.verifyToken, authJwt.isApproved], controller.reservation);
+
+router.get("/board", [authJwt.verifyToken, authJwt.isApproved], controller.board);
+
+router.get("/info", [authJwt.verifyToken, authJwt.isApproved], controller.info);
+
+router.get("/edit_info", [authJwt.verifyToken, authJwt.isApproved], controller.edit_info);
 
 module.exports = router;
