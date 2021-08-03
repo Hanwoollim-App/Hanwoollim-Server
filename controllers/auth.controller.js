@@ -30,9 +30,9 @@ exports.signup = (req, res) => {
 };
 
 
-// 로그인
+// 유저용 앱 로그인
 
-exports.signin = (req, res) => {
+exports.userSignin = (req, res) => {
     User.findOne({
         where: {
             id: req.body.id
@@ -59,18 +59,91 @@ exports.signin = (req, res) => {
                 expiresIn: "30 days" // 3600x24x30 만료기간 30일
             });
 
-            var authorities = [];
+            var authorities = '';
             user.getPositions().then(positions => {
                 for (let i = 0; i < positions.length; i++) {
-                    authorities.push("POSITION_" + positions[i].name.toUpperCase());
+                    authorities += positions[i].name;
                 }
-                res.status(200).send({
-                    jwt_id: user.jwt_id,
-                    id: user.id,
-                    studentid: user.studentid,
-                    position: authorities,
-                    accessToken: token
+                // res.status(200).send({
+                //     jwt_id: user.jwt_id,
+                //     id: user.id,
+                //     studentid: user.studentid,
+                //     position: authorities,
+                //     accessToken: token
+                // });
+                if (authorities!=="not_approved"){
+                    res.status(200);
+                    res.redirect('/user/home');
+                }else{
+                    res.status(200);
+                    res.redirect('/user/not_approved');
+                }
+                    
+            });
+
+            let options = {
+                path:"/user",
+                sameSite:true,
+                maxAge: 1000 * 2592000, // would expire after 30 days
+                httpOnly: true, // The cookie only accessible by the web server
+            }
+        
+            res.cookie('x-access-token',token, options) 
+        })
+
+        .catch(err => {
+            res.status(500).send({ message: err.message });
+        });
+};
+
+// 관리자용 앱 로그인
+
+exports.managerSignin = (req, res) => {
+    User.findOne({
+        where: {
+            id: req.body.id
+        }
+    })
+        .then(user => {
+            if (!user) {
+                return res.status(404).send({ message: "User Not found."});
+            }
+
+            var passwordIsValid = bcrypt.compareSync(
+                req.body.password,
+                user.password
+            );
+
+            if (!passwordIsValid) {
+                return res.status(401).send({
+                    accessToken: null,
+                    message: "Invalid Password!"
                 });
+            }
+
+            var token = jwt.sign({ jwt_id: user.id}, config.secret, {
+                expiresIn: "30 days" // 3600x24x30 만료기간 30일
+            });
+
+            var authorities = '';
+            user.getPositions().then(positions => {
+                for (let i = 0; i < positions.length; i++) {
+                    authorities += positions[i].name;
+                }
+                // res.status(200).send({
+                //     jwt_id: user.jwt_id,
+                //     id: user.id,
+                //     studentid: user.studentid,
+                //     position: authorities,
+                //     accessToken: token
+                // });
+                if (authorities === 'chairman'){
+                    res.status(200);
+                    res.redirect('/manager/chairman_home');
+                } else{
+                    res.status(200);
+                    res.redirect('/manager/admin_home');
+                }
             });
 
             let options = {
@@ -87,4 +160,3 @@ exports.signin = (req, res) => {
             res.status(500).send({ message: err.message });
         });
 };
-

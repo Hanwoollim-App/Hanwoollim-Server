@@ -51,6 +51,6 @@ db.user.belongsToMany(db.position, {
     as: "positions"  // to use getPosition() and setPosition()
 });
 
-db.POSITIONS = ["not approved", "user", "admin", "chairman"];
+db.POSITIONS = ["not_approved", "user", "admin", "chairman"];
 
 module.exports = db;

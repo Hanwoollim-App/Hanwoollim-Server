@@ -13,11 +13,11 @@ module.exports = function(app) {
     app.post(
         "/user/signup",
         [
-            verifySignUp.checkDuplicateIdOrStdId,
-            verifySignUp.checkPositionsExsisted
+            verifySignUp.checkDuplicateIdOrStdId
         ],
         controller.signup
     );
 
-    app.post("/user/signin", controller.signin);
+    app.post("/user/signin", controller.userSignin);
+    app.post("/manager/signin", controller.managerSignin);
 };

@@ -5,7 +5,6 @@
 */
 
 const db = require("../models");
-const POSITIONS = db.POSITIONS;
 const User = db.user;
 
 checkDuplicateIdOrStdId = (req, res, next) => {
@@ -45,24 +44,9 @@ checkDuplicateIdOrStdId = (req, res, next) => {
     });
 };
 
-checkPositionsExsisted = (req, res, next) => {
-    if (req.body.positions) {
-        for (let i=0; i < req.body.positions.length; i++) {
-            if (!POSITIONS.includes(req.body.positions[i])){
-                res.status(400).send({
-                    message: "Failed! Position does not exist = " + req.body.positions[i]
-                });
-                return;
-            }
-        }
-    }
-
-    next();
-};
 
 const verifySignUp = {
-    checkDuplicateIdOrStdId: checkDuplicateIdOrStdId,
-    checkPositionsExsisted: checkPositionsExsisted
+    checkDuplicateIdOrStdId: checkDuplicateIdOrStdId
 };
 
 module.exports = verifySignUp;

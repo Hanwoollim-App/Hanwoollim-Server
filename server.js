@@ -44,20 +44,25 @@ function initial() {
 
     Position.create({
         pid: 3,
-        name: "not approved"
+        name: "not_approved"
     });
 }
 
 
 
 app.get("/", (req, res) => {
-    res.json({ message: "This is the main page of 'Hanwoolim-User' application."});
+    res.json({ message: "This is the root page of Hanwoolim application."});
 });
 
 // routes
 require('./routes/auth.routes')(app);
 require('./routes/homepage.routes')(app);
 
+const user = require('./routes/user.routes');
+const manager = require('./routes/manager.routes');
+
+app.use('/user', user);
+app.use('/manager', manager);
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
