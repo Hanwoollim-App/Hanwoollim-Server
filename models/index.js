@@ -41,12 +41,12 @@ db.position = require("./position.model")(sequelize, Sequelize);
 db.position.belongsTo(db.user, {
     through: "user_positions",
     foreignKey: "positionId",
-    otherkey: "userId"
+    otherkey: "studentId"
 });
 
 db.user.belongsToMany(db.position, {
     through: "user_positions",
-    foreignKey: "userId",
+    foreignKey: "studentId",
     otherKey: "positionId",
     as: "positions"  // to use getPosition() and setPosition()
 });

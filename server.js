@@ -3,6 +3,9 @@ const cors = require("cors");
 
 const app = express();
 require('dotenv').config();
+var cookieParser = require('cookie-parser')
+
+app.use(cookieParser())
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -18,10 +21,10 @@ const db = require("./models");
 const Position = db.position;
 
 
-db.sequelize.sync({force: true}).then(() => {
-    console.log('Drop and Resync Db');
-    initial();
-});
+// db.sequelize.sync({force: true}).then(() => {
+//     console.log('Drop and Resync Db');
+//     initial();
+// });
 
 function initial() {
     Position.create({
@@ -53,7 +56,7 @@ app.get("/", (req, res) => {
 
 // routes
 require('./routes/auth.routes')(app);
-require('./routes/user.routes')(app);
+require('./routes/homepage.routes')(app);
 
 
 const PORT = process.env.PORT || 8080;

@@ -55,8 +55,8 @@ exports.signin = (req, res) => {
                 });
             }
 
-            var token = jwt.sign({ jwt_id: user.jwt_id}, config.secret, {
-                expiresIn: 2592000 // 3600x24x30 만료기간 30일
+            var token = jwt.sign({ jwt_id: user.id}, config.secret, {
+                expiresIn: "30 days" // 3600x24x30 만료기간 30일
             });
 
             var authorities = [];
@@ -72,6 +72,15 @@ exports.signin = (req, res) => {
                     accessToken: token
                 });
             });
+
+            let options = {
+                path:"/manager",
+                sameSite:true,
+                maxAge: 1000 * 2592000, // would expire after 30 days
+                httpOnly: true, // The cookie only accessible by the web server
+            }
+        
+            res.cookie('x-access-token',token, options) 
         })
 
         .catch(err => {
