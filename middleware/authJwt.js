@@ -23,8 +23,8 @@ verifyToken = (req, res, next) => {
             });
         }
         req.userId = decoded.jwt_id;
-        console.log(token);
-        console.log(decoded);
+        // console.log(token);
+        // console.log(decoded);
         next();
     });
 };
@@ -32,7 +32,7 @@ verifyToken = (req, res, next) => {
 
 isAdmin = (req, res, next) => {
     User.findOne({ where: { id: req.userId } }).then(user => { // findByPk(req.userId) 는 primarykey를 studentid로 바꿨기 때문에 사용못함
-        console.log("user",user);
+        console.log("authJWT_user",user);
         user.getPositions().then(positions => {
             for (let i = 0; i< positions.length; i++) {
                 if (positions[i].name === "admin") {
@@ -51,6 +51,7 @@ isAdmin = (req, res, next) => {
 
 isChairman = (req, res, next) => {
     User.findOne({ where: { id: req.userId } }).then(user => {
+        console.log("authJWT_user",user);
         user.getPositions().then(positions => {
             for (let i = 0; i < positions.length; i++) {
                 if (positions[i].name === "chairman") {

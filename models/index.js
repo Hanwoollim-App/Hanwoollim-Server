@@ -26,7 +26,8 @@ db.sequelize = sequelize;
 
 db.user = require("./user.model")(sequelize, Sequelize);
 db.position = require("./position.model")(sequelize, Sequelize);
-
+db.announcement = require("./announcement.model")(sequelize, Sequelize);
+db.board = require("./board.model")(sequelize, Sequelize);
 
 
 /* 

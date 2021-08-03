@@ -32,7 +32,7 @@ exports.adminHome = (req, res) => {
         <body>
             <p>Admin home.</p>
 
-            <a href='/manager/gathering'>고정합주 예약</a>
+            <a href='/manager/reservation'>고정합주 예약</a>
    
         </body>
     </html>
@@ -42,16 +42,21 @@ exports.adminHome = (req, res) => {
 
 exports.chairmanHome = (req, res) => {
     var output =`
-    Chairman home.
+    <html>
+        <body>
+            <p>Chairman home.</p>
 
-    회원 목록 및 회원정보 수정
+            <a href='/manager/manage_list'>회원 목록 및 회원정보 수정</a>
+            
+            <a href='/manager/gathering'>고정합주 예약</a>
+            
+            <a href='/manager/anouncement'>공지사항 등록하기</a>
 
-    고정합주 예약
-
-    공지사항 등록하기
-
-    신규 가입자 승인하기
+            <a href='/manager/approve_new_member'>신규 가입자 승인하기</a>
     
+   
+        </body>
+    </html>
     `
     res.status(200).send(output);
     

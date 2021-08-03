@@ -9,14 +9,24 @@ router.get("/signin", controller.signin);
 
 router.get("/not_approved", [authJwt.verifyToken], controller.not_approved);
 
-router.get("/gathering", [authJwt.verifyToken, authJwt.isApproved], controller.gathering);
+// 번개모임
+router.get("/lightning_gathering", [authJwt.verifyToken, authJwt.isApproved], controller.get_Lightning_gathering);
+router.post("/lightning_gathering", [authJwt.verifyToken, authJwt.isApproved], controller.post_Lightning_gathering);
 
-router.get("/reservation", [authJwt.verifyToken, authJwt.isApproved], controller.reservation);
+// 예약하기
+router.get("/reservation", [authJwt.verifyToken, authJwt.isApproved], controller.get_Reservation);
+router.post("/reservation", [authJwt.verifyToken, authJwt.isApproved], controller.post_Reservation);
 
-router.get("/board", [authJwt.verifyToken, authJwt.isApproved], controller.board);
+// 자료게시판
+router.get("/board", [authJwt.verifyToken, authJwt.isApproved], controller.get_Board);
+router.post("/board", [authJwt.verifyToken, authJwt.isApproved], controller.post_Board);
 
-router.get("/info", [authJwt.verifyToken, authJwt.isApproved], controller.info);
+// 개인정보 설정
+router.get("/info", [authJwt.verifyToken, authJwt.isApproved], controller.get_Info);
+router.post("/info", [authJwt.verifyToken, authJwt.isApproved], controller.post_Info);
 
-router.get("/edit_info", [authJwt.verifyToken, authJwt.isApproved], controller.edit_info);
+// 개인정보 수정
+router.get("/edit_info", [authJwt.verifyToken, authJwt.isApproved], controller.get_Edit_info);
+router.post("/edit_info", [authJwt.verifyToken, authJwt.isApproved], controller.post_Edit_info);
 
 module.exports = router;
