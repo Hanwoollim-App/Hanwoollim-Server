@@ -1,5 +1,4 @@
 const db = require("../models");
-const { userSignin } = require("./auth.controller");
 const User = db.user;
 const Announcement = db.announcement;
 
@@ -20,7 +19,7 @@ exports.get_Manage_list = (req, res) => {
     User.findAll().then(users => {
         //var output = [];
         for (let j = 0; j < users.length; j++) {
-           output.push( {'username': users[j].username, 'major': users[j].major, 'studentid': users[j].studentid} );
+           output.push( { 'username': users[j].username, 'major': users[j].major, 'studentid': users[j].studentid } );
         }
 
         res.status(200).send(output);
@@ -53,9 +52,13 @@ exports.post_Manage_list = (req, res) => {
         });
     }
     if (execute === 2){
-        User.destroy({ where: { studentid: req.body.studentid} }).then(user => {
+        User.destroy({ where: { studentid: req.body.studentid} }).then(() => {
             res.status(200).send("성공적으로 탈퇴 처리되었습니다!");
         });
+    }
+    
+    if (!execute){
+        res.status(200).send({message: "오류!"});
     }
     
 };

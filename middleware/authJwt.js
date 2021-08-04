@@ -23,8 +23,6 @@ verifyToken = (req, res, next) => {
             });
         }
         req.userId = decoded.jwt_id;
-        // console.log(token);
-        // console.log(decoded);
         next();
     });
 };
@@ -32,7 +30,6 @@ verifyToken = (req, res, next) => {
 
 isAdmin = (req, res, next) => {
     User.findOne({ where: { id: req.userId } }).then(user => { // findByPk(req.userId) 는 primarykey를 studentid로 바꿨기 때문에 사용못함
-        console.log("authJWT_user",user);
         user.getPositions().then(positions => {
             for (let i = 0; i< positions.length; i++) {
                 if (positions[i].name === "admin") {
@@ -51,7 +48,6 @@ isAdmin = (req, res, next) => {
 
 isChairman = (req, res, next) => {
     User.findOne({ where: { id: req.userId } }).then(user => {
-        console.log("authJWT_user",user);
         user.getPositions().then(positions => {
             for (let i = 0; i < positions.length; i++) {
                 if (positions[i].name === "chairman") {
@@ -92,10 +88,11 @@ isApproved = (req, res, next) => {
             for (let i = 0; i< positions.length; i++) {
                 if (positions[i].name === "not_approved") {
                     res.redirect('/user/not_approved');
+                    return;
                 }
             }
 
-            //next(); // next를 하면 이 미들웨어를 넘어가고, 'not_approved로 redirect' + '다음페이지를 불러오기'가 돼서 오류가 뜬다.
+            next(); // next를 하면 이 미들웨어를 넘어가고, 'not_approved로 redirect' + '다음페이지를 불러오기'가 돼서 오류가 뜬다.
             return;
         });
     });
