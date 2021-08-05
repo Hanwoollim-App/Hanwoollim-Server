@@ -17,8 +17,8 @@ router.get("/reservation", [authJwt.verifyToken, authJwt.isAdminOrChairman], con
 router.post("/reservation", [authJwt.verifyToken, authJwt.isAdminOrChairman], controller.post_Reservation);
 
 // 공지사항 등록 (관리자)
-router.get("/anouncement", [authJwt.verifyToken, authJwt.isChairman], controller.get_Anouncement);
-router.post("/anouncement", [authJwt.verifyToken, authJwt.isChairman], controller.post_Anouncement);
+router.get("/announcement", [authJwt.verifyToken, authJwt.isChairman], controller.get_Announcement);
+router.post("/announcement", [authJwt.verifyToken, authJwt.isChairman], controller.post_Announcement);
 
 // 신규 가입자 승인 (관리자)
 router.get("/approve_new_member", [authJwt.verifyToken, authJwt.isChairman], controller.get_Approve_new_member);

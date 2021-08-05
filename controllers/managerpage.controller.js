@@ -35,7 +35,8 @@ exports.post_Manage_list = (req, res) => {
             user.setPositions([0]).then(() => {
                 User.findOne({ where: { studentid: req.body.chairman_studentid} }).then(user => {
                     user.setPositions([2]).then(() => {
-                        res.status(200).send("회장직위 위임 성공!");
+                        res.status(200).send({ message: "회장직위 위임 성공!" });
+                        /// !!!! /manager/admin_home 으로 redirect
                     });
                         
                 });
@@ -46,19 +47,19 @@ exports.post_Manage_list = (req, res) => {
     if (execute === 1){
         User.findOne({ where: { studentid: req.body.studentid} }).then(user => {
             user.setPositions([1]).then(() => {
-                res.status(200).send("집행기로 지정 성공!");
+                res.status(200).send({ message: "집행기로 지정 성공!" });
             });
                 
         });
     }
     if (execute === 2){
         User.destroy({ where: { studentid: req.body.studentid} }).then(() => {
-            res.status(200).send("성공적으로 탈퇴 처리되었습니다!");
+            res.status(200).send({ message: "성공적으로 탈퇴 처리되었습니다!" });
         });
     }
     
     if (!execute){
-        res.status(200).send({message: "오류!"});
+        res.status(404).send({ message: "오류!" });
     }
     
 };
@@ -66,16 +67,16 @@ exports.post_Manage_list = (req, res) => {
 
 // 고정합주 예약 
 exports.get_Reservation = (req, res) => {
-    res.status(200).send("manager Reservation.");
+    res.status(200).send({ message: "manager Reservation." });
 };
 
 exports.post_Reservation = (req, res) => {
-    res.status(200).send("manager Reservation.");
+    res.status(200).send({ message: "manager Reservation." });
 };
 
 
 // 공지사항 등록
-exports.get_Anouncement = (req, res) => {
+exports.get_Announcement = (req, res) => {
     let output = []; // Json array
 
     Announcement.findAll().then(announcements => {
@@ -90,11 +91,11 @@ exports.get_Anouncement = (req, res) => {
     });
 };
 
-exports.post_Anouncement = (req, res) => {
+exports.post_Announcement = (req, res) => {
     var output = `
     
     `
-    res.status(200).send("manager Anouncement." + output);
+    res.status(200).send(output);
 };
 
 
@@ -129,7 +130,7 @@ exports.get_Approve_new_member = (req, res) => {
 exports.post_Approve_new_member = (req, res) => {
     User.findOne({ where: { studentid: req.body.studentid} }).then(user => {
         user.setPositions([2]).then(() => {
-            res.status(200).send("회원 승인 성공!");
+            res.status(200).send({ message: "회원 승인 성공!" });
         })
             
     });

@@ -44,7 +44,7 @@ exports.get_Board = (req, res) => {
     Board.findAll().then(boards => {
         //var output = [];
         for (let j = 0; j < boards.length; j++) {
-           output.push( {'title': boards[j].title, 'date': boards[j].expiredate} );
+           output.push( {'title': boards[j].title, 'expiredate': boards[j].expiredate} );
         }
 
         res.status(200).send(output);
@@ -99,7 +99,8 @@ exports.post_Info = async (req, res) => {
         });
 
         User.destroy({ where: { id: userId } }).then(() => {
-            res.status(200).send("성공적으로 탈퇴 처리되었습니다!");
+            res.status(200).send({ message: "성공적으로 탈퇴 처리되었습니다!"});
+            /// !!! /user 로 redirect 구현
         });
     }
 };
@@ -125,39 +126,30 @@ exports.post_Edit_info = async (req, res) => {
     await User.findOne({ where: { id: userId } }).then( async user => {
 
         // check if there is nothing changed
-        if (req.body.username==user.username){
-            res.status(400).send({
-                message: "Username Has Nothing changed!"
-            });
-            passed = false;
-            return;
-        }
-        if (req.body.major==user.major){
-            res.status(400).send({
-                message: "Major Has Nothing changed!"
-            });
-            passed = false;
-            return;
-        }
-        if (req.body.studentid==user.studentid){
-            res.status(400).send({
-                message: "Student Id Has Nothing changed!"
-            });
-            passed = false;
-            return;
-        }
 
+        // 응 필요없엉
+        // if (req.body.username==user.username){
+        //     res.status(400).send({
+        //         message: "Username Has Nothing changed!"
+        //     });
+        //     passed = false;
+        //     return;
+        // }
+        // if (req.body.major==user.major){
+        //     res.status(400).send({
+        //         message: "Major Has Nothing changed!"
+        //     });
+        //     passed = false;
+        //     return;
+        // }
+        // if (req.body.studentid==user.studentid){
+        //     res.status(400).send({
+        //         message: "Student Id Has Nothing changed!"
+        //     });
+        //     passed = false;
+        //     return;
+        // }
 
-
-        if (req.body.username) {
-            await User.update({ username: req.body.username }, { where: { id: userId } });
-            passed = true;
-        }
-        if (req.body.major) {
-            
-            await User.update({ major: req.body.major }, { where: { id: userId } });
-            passed = true;
-        }
         if (req.body.studentid) {
             
             // check if student is duplicated
@@ -177,13 +169,25 @@ exports.post_Edit_info = async (req, res) => {
 
             await User.update({ studentid: req.body.studentid }, { where: { id: userId } });
             passed = true;
+            if (req.body.username) {
+                await User.update({ username: req.body.username }, { where: { id: userId } });
+                passed = true;
+            }
+            if (req.body.major) {
+                
+                await User.update({ major: req.body.major }, { where: { id: userId } });
+                passed = true;
+            }
         }
+
+        
+        
         if (!req.body) {
-            res.status(200).send({ message: "Has no request!" });
+            res.status(404).send({ message: "Has no request!" });
         } else if (passed) {
-            res.status(200).send("개인정보 수정 성공!");
+            res.status(200).send({ message: "개인정보 수정 성공!"});
         } else {
-            res.status(200).send({ message: "Only part of things changed Or error type of request"});
+            res.status(400).send({ message: "bad type of request"});
         }
     }).catch(err => {
         res.status(500).send({ message: err.message });

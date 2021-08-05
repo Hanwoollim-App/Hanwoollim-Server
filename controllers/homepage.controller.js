@@ -50,7 +50,7 @@ exports.chairmanHome = (req, res) => {
             
             <a href='/manager/gathering'>고정합주 예약</a>
             
-            <a href='/manager/anouncement'>공지사항 등록하기</a>
+            <a href='/manager/announcement'>공지사항 등록하기</a>
 
             <a href='/manager/approve_new_member'>신규 가입자 승인하기</a>
     
