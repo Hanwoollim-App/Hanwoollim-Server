@@ -3,9 +3,6 @@ const cors = require("cors");
 
 const app = express();
 require('dotenv').config();
-var cookieParser = require('cookie-parser')
-
-app.use(cookieParser())
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

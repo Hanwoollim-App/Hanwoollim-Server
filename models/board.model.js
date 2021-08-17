@@ -1,5 +1,10 @@
 module.exports = (sequelize, Sequelize) => {
     const Board = sequelize.define("board", {
+        id: {
+            type: Sequelize.INTEGER,
+            autoIncrement: true,
+            primaryKey: true
+        },
         title: {
             type: Sequelize.STRING
         },
@@ -7,10 +12,10 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.DATE
         },
         fileurl: {
-            type: Sequelize.STRING
+            type: Sequelize.TEXT
         },
         body: {
-            type: Sequelize.STRING
+            type: Sequelize.TEXT
         }
     });
 

@@ -28,6 +28,7 @@ db.user = require("./user.model")(sequelize, Sequelize);
 db.position = require("./position.model")(sequelize, Sequelize);
 db.announcement = require("./announcement.model")(sequelize, Sequelize);
 db.board = require("./board.model")(sequelize, Sequelize);
+db.reservation = require("./reservation.model")(sequelize, Sequelize);
 
 
 /* 
@@ -39,16 +40,16 @@ db.board = require("./board.model")(sequelize, Sequelize);
     as connection between users and positions table via their primary key as foreign keys.
 */
 
-db.position.belongsTo(db.user, {
+db.position.belongsToMany(db.user, {
     through: "user_positions",
-    foreignKey: "positionId",
+    foreignKey: "pid",
     otherkey: "studentId"
 });
 
 db.user.belongsToMany(db.position, {
     through: "user_positions",
     foreignKey: "studentId",
-    otherKey: "positionId",
+    otherKey: "pid",
     as: "positions"  // to use getPosition() and setPosition()
 });
 

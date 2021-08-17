@@ -8,6 +8,7 @@ module.exports = function(app) {
             "x-access-token, Origin, Content-Type, Accept"
         );
         next();
+        console.log('used')
     });
 
     app.post(

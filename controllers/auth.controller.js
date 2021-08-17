@@ -66,31 +66,14 @@ exports.userSignin = (req, res) => {
                 for (let i = 0; i < positions.length; i++) {
                     authorities += positions[i].name;
                 }
-                // res.status(200).send({
-                //     jwt_id: user.jwt_id,
-                //     id: user.id,
-                //     studentid: user.studentid,
-                //     position: authorities,
-                //     accessToken: token
-                // });
-                if (authorities!=="not_approved"){
-                    res.status(200);
-                    res.redirect('/user/home');
-                }else{
-                    res.status(200);
-                    res.redirect('/user/not_approved');
-                }
+                res.status(200).send({"accessToken": token, "position": authorities})
+                // if (authorities!=="not_approved"){
+                //     res.writeHead(301, {Location: '/user/home', 'x-access-token': token}).end();
+                // }else{
+                //     res.writeHead(301, {Location: '/user/not_approved', 'x-access-token': token}).end();
+                // }
                     
             });
-
-            let options = {
-                path:"/user",
-                sameSite:true,
-                maxAge: 1000 * 2592000, // would expire after 30 days
-                httpOnly: true, // The cookie only accessible by the web server
-            }
-        
-            res.cookie('x-access-token',token, options) 
         })
 
         .catch(err => {
@@ -126,39 +109,50 @@ exports.managerSignin = (req, res) => {
             var token = jwt.sign({ jwt_id: user.id}, config.secret, {
                 expiresIn: "30 days" // 3600x24x30 만료기간 30일
             });
-
+            
             var authorities = '';
             user.getPositions().then(positions => {
                 for (let i = 0; i < positions.length; i++) {
                     authorities += positions[i].name;
                 }
-                // res.status(200).send({
-                //     jwt_id: user.jwt_id,
-                //     id: user.id,
-                //     studentid: user.studentid,
-                //     position: authorities,
-                //     accessToken: token
-                // });
-                if (authorities === 'chairman'){
-                    res.status(200);
-                    res.redirect('/manager/chairman_home');
-                } else{
-                    res.status(200);
-                    res.redirect('/manager/reservation'); // 유저가 접속할 경우 회장 또는 관리자가 아닙니다 경고를 보내는 페이지
-                }
+                res.status(200).send({"accessToken": token, "position": authorities})
+                // if (authorities === 'chairman'){
+                //     res.send(200);
+                //     res.redirect('/manager/chairman_home');
+                // } else if (authorities === 'admin'){
+                //     res.send(200);
+                //     res.redirect('/manager/admin_home');
+                // } else{
+                //     res.send(200);
+                //     res.redirect('/manager/reservation');
+                // }
             });
-
-            let options = {
-                path:"/manager",
-                sameSite:true,
-                maxAge: 1000 * 2592000, // would expire after 30 days
-                httpOnly: true, // The cookie only accessible by the web server
-            }
-        
-            res.cookie('x-access-token',token, options) 
         })
 
         .catch(err => {
             res.status(500).send({ message: err.message });
         });
 };
+
+exports.CheckFormat = (stime, etime) => { // array
+    for (let i = 0; i < stime.length; i++) {
+        if (stime[i] > etime[i]) {
+            return false, console.log({ message: '잘못된 포멧으로 저장되어있습니다. starttime이 endtime 보다 큽니다' });
+        }
+        if (stime[i] == etime[i]) {
+            return false, console.log({ message: '잘못된 포멧으로 저장되어있습니다. starttime와 endtime가 같습니다' });
+        }
+        if ((etime[i] - stime[i]) > 1) {
+            return false, console.log({ message: '잘못된 포멧으로 저장되어있습니다. 최대 예약시간은 1시간 입니다.' });
+        }
+        if (stime[i + 1]) {
+            if (etime[i] > stime[i + 1]) {
+                return false, console.log({ message: '잘못된 포멧으로 저장되어있습니다. endtime이 다음 starttime 보다 큽니다' });
+            }
+        }
+        if (stime > 24 || etime[i] > 24) {
+            return false, console.log({ message: '잘못된 포멧으로 저장되어있습니다. 시간이 24보다 큽니다' });
+        }
+    }
+    return true;
+}

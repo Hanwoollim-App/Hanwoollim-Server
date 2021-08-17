@@ -8,7 +8,7 @@ const db = require("../models");
 const User = db.user;
 
 verifyToken = (req, res, next) => {
-    let token = req.cookies["x-access-token"];
+    let token = req.headers["x-access-token"];
 
     if (!token){
         return res.status(403).send({
@@ -19,7 +19,7 @@ verifyToken = (req, res, next) => {
     jwt.verify(token, config.secret, (err, decoded) => {
         if (err){
             return res.status(401).send({
-                message: "인증 실패!"
+                message: "인증시 오류 발생 또는 토큰이 만료되었습니다"
             });
         }
         req.userId = decoded.jwt_id;
