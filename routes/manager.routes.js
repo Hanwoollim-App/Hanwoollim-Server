@@ -4,9 +4,9 @@ const { authJwt } = require("../middleware");
 const controller = require("../controllers/managerpage.controller");
 
 
-router.get("/", controller.root);
+// router.get("/", controller.root);
 
-router.get("/signin", controller.signin);
+// router.get("/signin", controller.signin);
 
 // 회원 목록 및 회원정보 수정 (관리자)
 router.get("/manage_list", [authJwt.verifyToken, authJwt.isChairman], controller.get_Manage_list);

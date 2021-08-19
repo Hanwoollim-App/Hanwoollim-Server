@@ -87,7 +87,7 @@ isApproved = (req, res, next) => {
         user.getPositions().then(positions => {
             for (let i = 0; i< positions.length; i++) {
                 if (positions[i].name === "not_approved") {
-                    res.redirect('/user/not_approved');
+                    res.status(403).send({ message: "아직 승인되지 않은 계정입니다." });
                     return;
                 }
             }

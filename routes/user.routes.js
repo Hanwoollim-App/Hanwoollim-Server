@@ -3,11 +3,11 @@ const router = express.Router();
 const { authJwt } = require("../middleware");
 const controller = require("../controllers/userpage.controller");
 
-router.get("/", controller.root);
+// router.get("/", controller.root);
 
-router.get("/signin", controller.signin);
+// router.get("/signin", controller.signin);
 
-router.get("/not_approved", [authJwt.verifyToken], controller.not_approved);
+// router.get("/not_approved", [authJwt.verifyToken], controller.not_approved);
 
 // 번개모임
 router.get("/lightning_gathering", [authJwt.verifyToken, authJwt.isApproved], controller.get_Lightning_gathering);
@@ -26,7 +26,6 @@ router.get("/info", [authJwt.verifyToken, authJwt.isApproved], controller.get_In
 router.post("/info", [authJwt.verifyToken, authJwt.isApproved], controller.post_Info);
 
 // 개인정보 수정
-router.get("/edit_info", [authJwt.verifyToken, authJwt.isApproved], controller.get_Edit_info);
-router.post("/edit_info", [authJwt.verifyToken, authJwt.isApproved], controller.post_Edit_info);
+router.patch("/edit_info", [authJwt.verifyToken, authJwt.isApproved], controller.patch_Edit_info);
 
 module.exports = router;

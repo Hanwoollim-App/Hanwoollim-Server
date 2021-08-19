@@ -3,14 +3,13 @@ const User = db.user;
 const Announcement = db.announcement;
 const Reservation = db.reservation;
 
-exports.root = (req, res) => {
-    res.status(200).send({ message: "This is the main page of 'Hanwoolim-Manager' application." });
-};
+// exports.root = (req, res) => {
+//     res.status(200).send({ message: "This is the main page of 'Hanwoolim-Manager' application." });
+// };
 
-exports.signin = (req, res) => {
-    res.status(200).send({ message: "관리자 앱 로그인 페이지." });
-};
-
+// exports.signin = (req, res) => {
+//     res.status(200).send({ message: "관리자 앱 로그인 페이지." });
+// };
 
 
 // 회원 목록 및 회원정보 수정

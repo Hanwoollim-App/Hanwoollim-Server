@@ -4,17 +4,13 @@ const db = require("../models");
 const User = db.user;
 const Board = db.board;
 
-exports.root = (req, res) => {
-    res.status(200).send({ message: "This is the main page of 'Hanwoolim-User' application." });
-};
+// exports.root = (req, res) => {
+//     res.status(200).send({ message: "This is the main page of 'Hanwoolim-User' application." });
+// };
 
-exports.signin = (req, res) => {
-    res.status(200).send({ message: "유저용 앱 로그인 페이지." });
-};
-
-exports.not_approved = (req, res) => {
-    res.status(200).send({ message: "아직 승인되지 않은 계정입니다." });
-};
+// exports.signin = (req, res) => {
+//     res.status(200).send({ message: "유저용 앱 로그인 페이지." });
+// };
 
 
 // 번개모임
@@ -95,10 +91,7 @@ exports.get_Info = async (req, res) => {
 
 exports.post_Info = async (req, res) => {
     let token = req.headers["x-access-token"];
-    if (req.body.execute === 0) {
-        res.redirect('/user/edit_info');
-        return;
-    }
+
     if (req.body.execute === 1) {
         jwt.verify(token, config.secret, (err, decoded) => {
             if (err) {
@@ -118,11 +111,11 @@ exports.post_Info = async (req, res) => {
 
 
 // 개인정보 수정
-exports.get_Edit_info = (req, res) => {
-    res.status(200).send("User Edit Info.");
-};
+// exports.get_Edit_info = (req, res) => {
+//     res.status(200).send("User Edit Info.");
+// };
 
-exports.post_Edit_info = async (req, res) => {
+exports.patch_Edit_info = async (req, res) => {
     let token = req.headers["x-access-token"];
     jwt.verify(token, config.secret, (err, decoded) => {
         if (err) {
@@ -168,7 +161,7 @@ exports.post_Edit_info = async (req, res) => {
 
         
         
-        if (!req.body) {
+        if (req.body.studentid===0 || req.body.major==='' || req.body.username==='' || !req.body) {
             res.status(404).send({ message: "Has no request!" });
         } else if (passed) {
             res.status(200).send({ message: "개인정보 수정 성공!"});
