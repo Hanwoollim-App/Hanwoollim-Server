@@ -7,13 +7,13 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.STRING
         },
         sidarr: {
-            type: Sequelize.STRING
+            type: Sequelize.JSON
         },
         session: {
-            type: Sequelize.STRING
+            type: Sequelize.JSON
         },
         MON: {
-            type: Sequelize.STRING
+            type: Sequelize.JSON
         },
         TUE: {
             type: Sequelize.JSON
