@@ -2,7 +2,7 @@ const db = require("../models");
 const User = db.user;
 const Announcement = db.announcement;
 const Reservation = db.reservation;
-
+const controller = require("../controllers/auth.controller");
 // exports.root = (req, res) => {
 //     res.status(200).send({ message: "This is the main page of 'Hanwoolim-Manager' application." });
 // };
@@ -67,53 +67,64 @@ exports.post_Manage_list = (req, res) => {
 
 // 고정합주 예약 
 exports.get_Reservation = (req, res) => {
-
-    async function CodeToReservation(sidJson, sessionJson, DoW, code) {
+    var pass = false;
+    async function CodeToReservation(sidArr, sessionJson, code) {
 
         // pass if nothing inside
         if (!code) {
-            console.log('값이 없습니다')
+            res.status(400).send({ message: '입력값이 없습니다' })
             return;
         }
-        var output = []
+        console.log(code)
+        var output = {} // function-out-json
         var starttime = code.starttime;
         var endtime = code.endtime;
-        var session1 = sessionJson[DoW].session1;
-        var session2 = sessionJson[DoW].session2;
-        var sidArr = sidJson[DoW];
+        var session1 = sessionJson.session1;
+        var session2 = sessionJson.session2;
         var passed = false;
 
         // 갯수 매칭 체크
-        if (sidJson[DoW].length !== starttime.length || sessionJson[DoW].length !== endtime.length || starttime.length !== endtime.length) {
-            console.log('이름,예약시작시간,예약종료시간,세션 갯수 매칭안됨!')
+        console.log(starttime, endtime, session1, session2,)
+        console.log(sidArr.length, Object.keys(starttime).length, Object.keys(session1).length, Object.keys(endtime).length, Object.keys(starttime).length, Object.keys(endtime).length)
+        if (sidArr.length !== Object.keys(starttime).length || Object.keys(session1).length !== Object.keys(endtime).length || Object.keys(starttime).length !== Object.keys(endtime).length) {
+            return res.status(400).send({ message: '이름,예약시작시간,예약종료시간,세션 갯수 매칭안됨!' })
         }
 
         // Check Format
         passed = controller.CheckFormat(starttime, endtime);
         if (passed) {
-            for (let i = 0; i < starttime.length; i++) {
+            for (let i = 0; i < Object.keys(starttime).length; i++) {
                 await User.findOne({ where: { studentid: sidArr[i] } }).then(user => {
                     username = user.name;
                 }).catch(err => {
                     res.status(500).send({ message: err.message });
                 });
 
-                output.push({ "studentid": sidArr[i], "name": username, "starttime": starttime[i], "endtime": endtime[i], "session1": session1[i], "session2": session2[i] })
+                output = { "studentid": sidArr[i], "name": username, "starttime": starttime[i], "endtime": endtime[i], "session1": session1[i], "session2": session2[i] } 
             }
         }
+        console.log("----------------",output)
         return output;
     }
 
     Reservation.findOne({
         where: {
-            STARTDATE: req.query.startdate
+            STARTDATE: Date.parse(req.query.startdate)
         }
-    }).then(reservation => {
-        console.log(reservation)
-        var output = []
+    }).then(async reservation => {
+        console.log('there is reservation')
+        var output = {} // json array
         if (reservation) {
-            for (let r in reservation) {
-                output.push(CodeToReservation(reservation.sidarr, reservation.session, reservation[w]));
+            curr_res = reservation.dataValues
+            output.STARTDATE = controller.Dateformat(curr_res.STARTDATE)
+            output.ReservationType = curr_res.ReservationType
+            for (let w in curr_res) {
+                if (curr_res[w] !== null && w!== "createdAt" && w!= "updatedAt" && w !== "id" && w !== "STARTDATE" && w !== "ReservationType" && w !== "sidarr" && w !== "sidarr" && w !== "session") { // 요일 (MON~SUN) 만 포함한다.
+                    console.log(curr_res.sidarr[w], curr_res.session[w], curr_res[w]);
+                    output[w]=[]
+                    output[w].push(await CodeToReservation(curr_res.sidarr[w], curr_res.session[w], curr_res[w]));
+                    console.log("///////",output)
+                }
             }
         }
         res.status(200).send(output);
@@ -121,7 +132,7 @@ exports.get_Reservation = (req, res) => {
         res.status(500).send({ message: err.message });
     });
 
-
+    console.log(req.query.startdate+'req.query')
 
     code1 = { "starttime": [], "endtime": [] }
     code2 = { "starttime": [8, 9.5], "endtime": [9, 10] }
@@ -205,7 +216,7 @@ exports.post_Reservation = (req, res) => {
                 for (let w in new_reservation){
                     if (w !== "STARTDATE" && w !== "ReservationType") {
                         output[w] = { 'starttime': [], 'endtime': []}
-                        output.sidarr[w].push = [studentid]
+                        output.sidarr[w] = [studentid]
                         output[w].starttime = []
                         output[w].endtime = []
                         output[w].starttime.push(new_reservation[w].starttime)
@@ -454,12 +465,10 @@ exports.get_Approve_new_member = (req, res) => {
     User.findAll().then(async users => {
         //var output = [];
         for (let j = 0; j < users.length; j++) {
-            //console.log("managerpage_user", users[j]);
             await users[j].getPositions().then(positions => {
                 for (let i = 0; i < positions.length; i++) {
                     if (positions[i].name === "not_approved") {
                         output.push({ 'username': users[j].username, 'major': users[j].major, 'studentid': users[j].studentid });
-                        console.log(output);
                     }
                 }
             });
