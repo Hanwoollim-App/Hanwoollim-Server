@@ -146,7 +146,7 @@ exports.managerSignin = (req, res) => {
         });
 };
 
-exports.CheckFormat = (stime, etime) => { // array
+exports.checkFormat = (stime, etime) => { // array
     for (let i = 0; i < stime.length; i++) {
         if (stime[i] > etime[i]) {
             return [false, { message: '잘못된 포멧입니다. starttime이 endtime 보다 큽니다' }];
@@ -169,7 +169,7 @@ exports.CheckFormat = (stime, etime) => { // array
     return [true];
 }
 
-exports.Dateformat = (date) => {
+exports.dateFormat = (date) => {
     var d = new Date(date),
             month = '' + (d.getMonth() + 1),
             day = '' + d.getDate(),

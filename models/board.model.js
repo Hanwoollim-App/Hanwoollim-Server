@@ -8,10 +8,10 @@ module.exports = (sequelize, Sequelize) => {
         title: {
             type: Sequelize.STRING
         },
-        expiredate: {
+        expireDate: {
             type: Sequelize.DATE
         },
-        fileurl: {
+        fileUrl: {
             type: Sequelize.TEXT
         },
         body: {

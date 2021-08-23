@@ -6,13 +6,13 @@ module.exports = (sequelize, Sequelize) => {
         password: {
             type: Sequelize.STRING
         },
-        username: {
+        userName: {
             type: Sequelize.STRING
         },
         major: {
             type: Sequelize.STRING
         },
-        studentid: {
+        studentId: {
             type: Sequelize.INTEGER,
             primaryKey: true
         }
