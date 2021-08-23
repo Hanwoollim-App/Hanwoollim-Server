@@ -1,12 +1,12 @@
 module.exports = (sequelize, Sequelize) => {
     const Reservation = sequelize.define("reservation", {
-        STARTDATE:{
+        startDate:{
             type: Sequelize.DATE
         },
-        ReservationType: {
+        reservationType: {
             type: Sequelize.STRING
         },
-        sidarr: {
+        sidArr: {
             type: Sequelize.JSON
         },
         session: {
