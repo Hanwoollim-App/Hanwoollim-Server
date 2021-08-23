@@ -3,6 +3,7 @@
 */
 
 exports.userHome = (req, res, next) => {
+    console.log('--------------- get /user/home ---------------');
     var output = `
     <html>
         <body>
@@ -28,6 +29,7 @@ exports.userHome = (req, res, next) => {
 };
 
 exports.adminHome = (req, res) => {
+    console.log('--------------- get /manager/admin_home ---------------');
     var output =`
     <html>
         <body>
@@ -43,6 +45,7 @@ exports.adminHome = (req, res) => {
 };
 
 exports.chairmanHome = (req, res) => {
+    console.log('--------------- get /manager/chairman_home ---------------');
     var output =`
     <html>
         <body>

@@ -14,6 +14,7 @@ const controller = require("../controllers/auth.controller");
 
 // 회원 목록 및 회원정보 수정
 exports.get_Manage_list = (req, res) => {
+    console.log('--------------- get /manager/manage_list ---------------');
     let output = []; // Json array
 
     User.findAll().then(users => {
@@ -29,6 +30,7 @@ exports.get_Manage_list = (req, res) => {
 };
 
 exports.post_Manage_list = (req, res) => {
+    console.log('--------------- post /manager/manage_list ---------------');
     var execute = req.body.execute;
     if (execute === 0) {
         User.findOne({ where: { studentid: req.body.studentid } }).then(user => {
@@ -67,15 +69,13 @@ exports.post_Manage_list = (req, res) => {
 
 // 고정합주 예약 
 exports.get_Reservation = (req, res) => {
-    var pass = false;
+    console.log('--------------- get /manager/reservation ---------------');
     async function CodeToReservation(sidArr, sessionJson, code) {
 
-        // pass if nothing inside
         if (!code) {
             res.status(400).send({ message: '입력값이 없습니다' })
             return;
         }
-        console.log(code)
         var output = {} // function-out-json
         var starttime = code.starttime;
         var endtime = code.endtime;
@@ -84,8 +84,7 @@ exports.get_Reservation = (req, res) => {
         var passed = false;
 
         // 갯수 매칭 체크
-        console.log(starttime, endtime, session1, session2,)
-        console.log(sidArr.length, Object.keys(starttime).length, Object.keys(session1).length, Object.keys(endtime).length, Object.keys(starttime).length, Object.keys(endtime).length)
+        //console.log(sidArr.length, Object.keys(starttime).length, Object.keys(session1).length, Object.keys(endtime).length, Object.keys(starttime).length, Object.keys(endtime).length)
         if (sidArr.length !== Object.keys(starttime).length || Object.keys(session1).length !== Object.keys(endtime).length || Object.keys(starttime).length !== Object.keys(endtime).length) {
             return res.status(400).send({ message: '이름,예약시작시간,예약종료시간,세션 갯수 매칭안됨!' })
         }
@@ -103,76 +102,45 @@ exports.get_Reservation = (req, res) => {
                 output = { "studentid": sidArr[i], "name": username, "starttime": starttime[i], "endtime": endtime[i], "session1": session1[i], "session2": session2[i] } 
             }
         }
-        console.log("----------------",output)
         return output;
     }
 
-    Reservation.findOne({
+    Reservation.findAll({
         where: {
             STARTDATE: Date.parse(req.query.startdate)
         }
     }).then(async reservation => {
-        console.log('there is reservation')
-        var output = {} // json array
-        if (reservation) {
-            curr_res = reservation.dataValues
-            output.STARTDATE = controller.Dateformat(curr_res.STARTDATE)
-            output.ReservationType = curr_res.ReservationType
-            for (let w in curr_res) {
-                if (curr_res[w] !== null && w!== "createdAt" && w!= "updatedAt" && w !== "id" && w !== "STARTDATE" && w !== "ReservationType" && w !== "sidarr" && w !== "sidarr" && w !== "session") { // 요일 (MON~SUN) 만 포함한다.
-                    console.log(curr_res.sidarr[w], curr_res.session[w], curr_res[w]);
-                    output[w]=[]
-                    output[w].push(await CodeToReservation(curr_res.sidarr[w], curr_res.session[w], curr_res[w]));
-                    console.log("///////",output)
+        var outputArr = [] // json array
+        var output = {}
+        if (reservation){
+            
+            for (let i = 0; i < reservation.length; i++) {
+                if (reservation[i].dataValues.ReservationType==="Together" || reservation[i].dataValues.ReservationType==="Mentoring") {
+                    curr_res = reservation[i].dataValues
+                    //console.log(curr_res)
+                    output.STARTDATE = controller.Dateformat(curr_res.STARTDATE)
+                    output.ReservationType = curr_res.ReservationType
+                    for (let w in curr_res) {
+                        if (curr_res[w] !== null && w!== "createdAt" && w!= "updatedAt" && w !== "id" && w !== "STARTDATE" && w !== "ReservationType" && w !== "sidarr" && w !== "sidarr" && w !== "session") { // 요일 (MON~SUN) 만 포함한다.
+                            output[w]=[]
+                            output[w].push(await CodeToReservation(curr_res.sidarr[w], curr_res.session[w], curr_res[w]));
+                        }
+                    }
+                    outputArr.push( JSON.parse(JSON.stringify(output)) ) // reference가 copy되기 때문에 newcopy를 만들어준것
+
                 }
             }
         }
-        res.status(200).send(output);
+        res.status(200).send(outputArr);
     }).catch(err => {
         res.status(500).send({ message: err.message });
     });
 
-    console.log(req.query.startdate+'req.query')
-
-    code1 = { "starttime": [], "endtime": [] }
-    code2 = { "starttime": [8, 9.5], "endtime": [9, 10] }
-    code3 = { "starttime": [7, 8], "endtime": [8, 10] }
-    sid1 = { "MON": [2021013218, 2021013098], "TUE": [2021013217] }
-    session1 = { "MON": { "session1": ["기타", "피아노"], "session2": ["", "베이스"] }, "TUE": { "session1": ["드럼", "베이스"], "session2": ["", "기타"] } }
-    DoW = "TUE" // Day of Week
-    //CodeToReservation(sid1, code2, session1, DoW)
-
-    var outreservation = { // 클라이언트에게 보내는 형식
-        "STARTDATE": "2021-08-08", // 월요일을 첫날 기준으로 한 주가 시작하는 날짜입니다.
-        "ReservationType": "Together", //Personal, Together, Mentoring
-        "MON": [{ // json array로 보내준다.
-            "studentid": 2021013218, // 개인 식별용
-            "name": "이재만",
-            "starttime": 8, // integer로 변경 (24시간)
-            "endtime": 8.5,
-            "session1": "기타", // reservation type이 personal혹은 mentoring일 경우 session1, session2키를 보내지 않는다.
-            "session2": "" // session2에 value가 없더라도 key를 전달한다.
-        }, {
-            "studentid": 2021013219,
-            "name": "고병찬",
-            "starttime": 9,
-            "endtime": 10,
-            "session1": "피아노",
-            "session2": "베이스"
-        }],
-        "TUE": [{
-            "studentid": 2021013220,
-            "name": "고병찬",
-            "starttime": 10.5,
-            "endtime": 11,
-            "session1": "베이스",
-            "session2": "기타"
-        }],
-        "WEN": []
-    }
+    console.log('req.query: '+req.query.startdate)
 };
 
 exports.post_Reservation = (req, res) => {
+    console.log('--------------- post /manager/reservation ---------------');
     const controller = require("./auth.controller");
     var jwt = require("jsonwebtoken");
     const config = require("../config/auth.config");
@@ -200,7 +168,7 @@ exports.post_Reservation = (req, res) => {
 
 
 
-        Reservation.findAll({ // 추가할 내용이 기존에 있는 startdate, reservationType인지 확인
+        Reservation.findOne({ // 추가할 내용이 기존에 있는 startdate, reservationType인지 확인
             where: {
                 STARTDATE: Date.parse(new_reservation.STARTDATE),
                 ReservationType: new_reservation.ReservationType
@@ -210,11 +178,16 @@ exports.post_Reservation = (req, res) => {
             var new_startdate = new_reservation.STARTDATE;
             var new_reservationtype = new_reservation.ReservationType;
             
-            var passed = false;
 
-            if (reservation==0) { // 해당하는 날짜와 reservationtype이 없을 경우 (왜 인지 모르겠지만 !reservation 대신 reservation==0이 먹힌다)
+            if (reservation==null) { // 해당하는 날짜와 reservationtype이 없을 경우 (왜 인지 모르겠지만 !reservation 대신 reservation==0이 먹힌다)--> 그 전에는 findAll을 사용했기 때문
+                var passedArr = []
+
                 for (let w in new_reservation){
                     if (w !== "STARTDATE" && w !== "ReservationType") {
+                        passedArr = controller.CheckFormat([new_reservation[w].starttime], [new_reservation[w].endtime]);;
+                        if (passedArr[0]===false) {
+                            return res.status(400).send(passedArr[1])
+                        }  
                         output[w] = { 'starttime': [], 'endtime': []}
                         output.sidarr[w] = [studentid]
                         output[w].starttime = []
@@ -226,27 +199,31 @@ exports.post_Reservation = (req, res) => {
                         output.session[w].session2.push(new_reservation[w].session2)
                     }
                 }
+                
+                
 
-                await Reservation.create({
-                    STARTDATE: new_startdate,
-                    ReservationType: new_reservationtype,
-                    sidarr: output.sidarr,
-                    session: output.session,
-                    MON: output.MON,
-                    TUE: output.TUE,
-                    WEN: output.WEN,
-                    THUR: output.THUR,
-                    FRI: output.FRI,
-                    SAT: output.SAT,
-                    SUN: output.SUN
-                })
-
+                if (passedArr[0]===true) {
+                    await Reservation.create({
+                        STARTDATE: new_startdate,
+                        ReservationType: new_reservationtype,
+                        sidarr: output.sidarr,
+                        session: output.session,
+                        MON: output.MON,
+                        TUE: output.TUE,
+                        WEN: output.WEN,
+                        THUR: output.THUR,
+                        FRI: output.FRI,
+                        SAT: output.SAT,
+                        SUN: output.SUN
+                    })
+                }
                 res.status(200).send({ message: "예약완료!"})
                 return;
             }
 
             // 기존 예약이 있을 경우
-            current_res = reservation[0].dataValues // Sequelize를 통해 받아온 구조 분석 후 사용한 것.
+            var passed = false;
+            current_res = reservation.dataValues // Sequelize를 통해 받아온 구조 분석 후 사용한 것.
             for (let w in current_res) { // Week의 예약 내용 불러오기
                 if (new_reservation[w] !== undefined && w !== "id" && w !== "STARTDATE" && w !== "ReservationType" && w !== "sidarr" && w !== "sidarr" && w !== "session") { // 요일 (MON~SUN) 만 포함한다.
                     var new_stime = new_reservation[w].starttime; // int
@@ -308,16 +285,16 @@ exports.post_Reservation = (req, res) => {
 
                             passed = controller.CheckFormat(stimearr, etimearr);;
                             // 변경 후 포멧확인으로 2차 점검
-                            
-                            output.sidarr[w] = stdid
-                            output.sidarr[w].push(studentid)
-                            output[w] = { 'starttime': [], 'endtime': []}
-                            console.log(w,output[w].starttime )
-                            output[w].starttime = stimearr
-                            output[w].endtime = etimearr
-                            output.session[w]= {'session1':[],'session2':[]}
-                            output.session[w].session1 = session1
-                            output.session[w].session2 = session2
+                            if (passed){                            output.sidarr[w] = stdid
+                                output.sidarr[w].push(studentid)
+                                output[w] = { 'starttime': [], 'endtime': []}
+                                console.log(w,output[w].starttime )
+                                output[w].starttime = stimearr
+                                output[w].endtime = etimearr
+                                output.session[w]= {'session1':[],'session2':[]}
+                                output.session[w].session1 = session1
+                                output.session[w].session2 = session2
+                            }
 
                         } else { // 해당reservation date, type의 요일에 예약정보추가
                             output.sidarr[w] = stdid
@@ -357,7 +334,8 @@ exports.post_Reservation = (req, res) => {
                 }
             })
 
-            res.status(200).send({ message: "예약성공!"});
+            if(passed || passedArr[0]) res.status(200).send({ message: "예약성공!"});
+    
 
         }).catch(err => {
             res.status(500).send({ message: err.message, line: err.stack });
@@ -365,41 +343,6 @@ exports.post_Reservation = (req, res) => {
         });
 
     }
-
-    var reservation1 = { //클라이언트한테서 받는 형식
-        "STARTDATE": "2021-08-02", // 월요일을 첫날 기준으로 한 주가 시작하는 날짜입니다.
-        "ReservationType": "Personal", //Personal, Together, Mentoring
-        "MON": {
-            "starttime": 8,
-            "endtime": 8.5,
-            "session1": "베이스",
-            "session2": ""
-        },
-        "TUE": {
-            "starttime": 10.5,
-            "endtime": 11,
-            "session1": "기타",
-            "session2": "피아노"
-        },
-        "WEN": {},
-    };
-
-    var reservation2 = { //클라이언트한테서 받는 형식
-        "STARTDATE": "2021-08-08", // 월요일을 첫날 기준으로 한 주가 시작하는 날짜입니다.
-        "ReservationType": "Together", //Personal, Together, Mentoring
-        "MON": {
-            "starttime": 8,
-            "endtime": 8.5,
-            "session1": "기타",
-            "session2": "" // session2에 아무것도 없더라도 key를 전달해야 한다.
-        },
-        "TUE": {
-            "starttime": 10.5,
-            "endtime": 11,
-            "session1": "베이스",
-            "session2": "기타"
-        }
-    };
 
     var reservation = {
         "STARTDATE": req.body.STARTDATE,
@@ -413,7 +356,6 @@ exports.post_Reservation = (req, res) => {
     if(req.body.SAT) reservation.SAT = req.body.SAT
     if(req.body.SUN) reservation.SUN = req.body.SUN
 
-    console.log(req.body.a)
     ReservationToDb(reservation)
 
 };
@@ -421,6 +363,7 @@ exports.post_Reservation = (req, res) => {
 
 // 공지사항 등록
 exports.get_Announcement = (req, res) => {
+    console.log('--------------- get /manager/announcement ---------------');
     let output = []; // Json array
 
     Announcement.findAll().then(announcements => { // 미리보기 불러오기(제목, 날짜)
@@ -434,6 +377,7 @@ exports.get_Announcement = (req, res) => {
 };
 
 exports.post_Announcement = async (req, res) => {
+    console.log('--------------- post /manager/announcement ---------------');
     if (req.body.delete === 1) {
         Announcement.destroy({ where: { id: req.body.id } }).then(() => {
             res.status(200).send({ message: "삭제했습니다!" });
@@ -460,6 +404,7 @@ exports.post_Announcement = async (req, res) => {
 
 // 신규 가입자 승인
 exports.get_Approve_new_member = (req, res) => {
+    console.log('--------------- get /manager/approve_new_member ---------------');
     let output = []; // Json array
 
     User.findAll().then(async users => {
@@ -484,6 +429,7 @@ exports.get_Approve_new_member = (req, res) => {
 };
 
 exports.post_Approve_new_member = (req, res) => {
+    console.log('--------------- post /manager/approve_new_member ---------------')
     User.findOne({ where: { studentid: req.body.studentid } }).then(user => {
         user.setPositions([2]).then(() => {
             res.status(200).send({ message: "회원 승인 성공!" });

@@ -84,6 +84,7 @@ exports.userSignin = (req, res) => {
                 // }
                     
             });
+            console.log('--------------- user app tried sign in ---------------');
         })
 
         .catch(err => {
@@ -137,6 +138,7 @@ exports.managerSignin = (req, res) => {
                 //     res.redirect('/manager/reservation');
                 // }
             });
+            console.log('--------------- manager app tried sign in ---------------');
         })
 
         .catch(err => {
@@ -147,24 +149,24 @@ exports.managerSignin = (req, res) => {
 exports.CheckFormat = (stime, etime) => { // array
     for (let i = 0; i < stime.length; i++) {
         if (stime[i] > etime[i]) {
-            return false, console.log({ message: '잘못된 포멧으로 저장되어있습니다. starttime이 endtime 보다 큽니다' });
+            return [false, { message: '잘못된 포멧입니다. starttime이 endtime 보다 큽니다' }];
         }
         if (stime[i] == etime[i]) {
-            return false, console.log({ message: '잘못된 포멧으로 저장되어있습니다. starttime와 endtime가 같습니다' });
+            return [false, { message: '잘못된 포멧입니다. starttime와 endtime가 같습니다' }];
         }
         if ((etime[i] - stime[i]) > 1) {
-            return false, console.log({ message: '잘못된 포멧으로 저장되어있습니다. 최대 예약시간은 1시간 입니다.' });
+            return [false, { message: '잘못된 포멧입니다. 최대 예약시간은 1시간 입니다.' }];
         }
         if (stime[i + 1]) {
             if (etime[i] > stime[i + 1]) {
-                return false, console.log({ message: '잘못된 포멧으로 저장되어있습니다. endtime이 다음 starttime 보다 큽니다' });
+                return [false, { message: '잘못된 포멧입니다. endtime이 다음 starttime 보다 큽니다' }];
             }
         }
         if (stime > 24 || etime[i] > 24) {
-            return false, console.log({ message: '잘못된 포멧으로 저장되어있습니다. 시간이 24보다 큽니다' });
+            return [false, { message: '잘못된 포멧입니다. 시간이 24보다 큽니다' }];
         }
     }
-    return true;
+    return [true];
 }
 
 exports.Dateformat = (date) => {
