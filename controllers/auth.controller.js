@@ -11,7 +11,7 @@ var bcrypt = require("bcryptjs");
 
 // 회원가입
 
-exports.signup = (req, res) => {
+exports.signUp = (req, res) => {
     // Save User to Database
     if (req.body.id==='') req.body.id=null
     if (req.body.password==='') req.body.password=null
@@ -44,7 +44,7 @@ exports.signup = (req, res) => {
 
 // 유저용 앱 로그인
 
-exports.userSignin = (req, res) => {
+exports.userSignIn = (req, res) => {
     User.findOne({
         where: {
             id: req.body.id
@@ -94,7 +94,7 @@ exports.userSignin = (req, res) => {
 
 // 관리자용 앱 로그인
 
-exports.managerSignin = (req, res) => {
+exports.managerSignIn = (req, res) => {
     User.findOne({
         where: {
             id: req.body.id

@@ -12,13 +12,13 @@ module.exports = function(app) {
     });
 
     app.post(
-        "/user/signup",
+        "/user/signUp",
         [
             verifySignUp.checkDuplicateIdOrStdId
         ],
-        controller.signup
+        controller.signUp
     );
 
-    app.post("/user/signin", controller.userSignin);
-    app.post("/manager/signin", controller.managerSignin);
+    app.post("/user/signIn", controller.userSignIn);
+    app.post("/manager/signIn", controller.managerSignIn);
 };
