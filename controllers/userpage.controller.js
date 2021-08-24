@@ -17,12 +17,12 @@ const controller = require("../controllers/auth.controller");
 
 // 번개모임
 exports.get_Lightning_gathering = (req, res) => {
-    console.log('--------------- get /user/ligntning_gathering ---------------');
+    console.log('--------------- get /user/ligntningGathering ---------------');
     res.status(200).send("User Lightning Gathering.");
 };
 
 exports.post_Lightning_gathering = (req, res) => {
-    console.log('--------------- post /user/ligntning_gathering ---------------');
+    console.log('--------------- post /user/ligntningGathering ---------------');
     res.status(200).send("User Lightning Gathering.");
 };
 
@@ -101,7 +101,7 @@ exports.get_Reservation = (req, res) => {
 };
 
 exports.post_Reservation = (req, res) => { // 관리자용 앱과 완전히 동일
-    console.log('--------------- post /user/ligntning_gathering ---------------');
+    console.log('--------------- post /user/reservation ---------------');
     const controller = require("./auth.controller");
     var jwt = require("jsonwebtoken");
     const config = require("../config/auth.config");
@@ -409,7 +409,7 @@ exports.post_Info = async (req, res) => {
 // };
 
 exports.patch_Edit_info = async (req, res) => {
-    console.log('--------------- patch /user/edit_info ---------------');
+    console.log('--------------- patch /user/editInfo ---------------');
     let token = req.headers["x-access-token"];
     jwt.verify(token, config.secret, (err, decoded) => {
         if (err) {

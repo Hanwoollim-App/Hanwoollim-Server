@@ -15,8 +15,8 @@ exports.userHome = (req, res, next) => {
 
             <div><a href='/user/gathering'>번개모임</a></div>
 
-            <div><a href='/user/reservation?startdate='>예약하기</a></div>
-            <p> 클라이언트는 현재 요일에 해당하는 주차의 정보를 받아오기 위해 startdate(query)에 "2021-09-01" 형식으로 보내야한다.</p>
+            <div><a href='/user/reservation?startDate='>예약하기</a></div>
+            <p> 클라이언트는 현재 요일에 해당하는 주차의 정보를 받아오기 위해 startDate(query)에 "2021-09-01" 형식으로 보내야한다.</p>
 
             <div><a href='/user/board'>공지사항</a></div>
 
@@ -29,14 +29,14 @@ exports.userHome = (req, res, next) => {
 };
 
 exports.adminHome = (req, res) => {
-    console.log('--------------- get /manager/admin_home ---------------');
+    console.log('--------------- get /manager/adminHome ---------------');
     var output =`
     <html>
         <body>
             <p>Admin home.</p>
 
-            <div><a href='/manager/reservation?startdate='>고정합주 예약</a></div>
-            <p> 클라이언트는 현재 요일에 해당하는 주차의 정보를 받아오기 위해 startdate(query)에 "2021-09-01" 형식으로 보내야한다.</p>
+            <div><a href='/manager/reservation?startDate='>고정합주 예약</a></div>
+            <p> 클라이언트는 현재 요일에 해당하는 주차의 정보를 받아오기 위해 startDate(query)에 "2021-09-01" 형식으로 보내야한다.</p>
    
         </body>
     </html>
@@ -45,7 +45,7 @@ exports.adminHome = (req, res) => {
 };
 
 exports.chairmanHome = (req, res) => {
-    console.log('--------------- get /manager/chairman_home ---------------');
+    console.log('--------------- get /manager/chairmanHome ---------------');
     var output =`
     <html>
         <body>
@@ -53,8 +53,8 @@ exports.chairmanHome = (req, res) => {
 
             <div><a href='/manager/manage_list'>회원 목록 및 회원정보 수정</a></div>
             
-            <div><a href='/manager/reservation?startdate='>고정합주 예약</a></div>
-            <p> 클라이언트는 현재 요일에 해당하는 주차의 정보를 받아오기 위해 startdate(query)에 "2021-09-01" 형식으로 보내야한다.</p>
+            <div><a href='/manager/reservation?startDate='>고정합주 예약</a></div>
+            <p> 클라이언트는 현재 요일에 해당하는 주차의 정보를 받아오기 위해 startDate(query)에 "2021-09-01" 형식으로 보내야한다.</p>
             
             <div><a href='/manager/announcement'>공지사항 등록하기</a></div>
 

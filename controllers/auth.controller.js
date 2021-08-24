@@ -13,22 +13,23 @@ var bcrypt = require("bcryptjs");
 
 exports.signUp = (req, res) => {
     // Save User to Database
+    console.log(req.body.studentId)
     if (req.body.id==='') req.body.id=null
     if (req.body.password==='') req.body.password=null
-    if (req.body.username==='') req.body.username=null
+    if (req.body.userName==='') req.body.userName=null
     if (req.body.major==='') req.body.major=null
-    if (req.body.studentid===0) req.body.studentid=null
+    if (req.body.studentId===0) req.body.studentId=null
     if (!req.body.id) return res.status(500).send({ message: "아이디 입력하세요" });
     if (!req.body.password) return res.status(500).send({ message: "비밀번호를 입력하세요" });
-    if (!req.body.username) return res.status(500).send({ message: "이름을 입력하세요" });
+    if (!req.body.userName) return res.status(500).send({ message: "이름을 입력하세요" });
     if (!req.body.major) return res.status(500).send({ message: "전공을 입력하세요" });
-    if (!req.body.studentid) return res.status(500).send({ message: "학번를 입력하세요" });
+    if (!req.body.studentId) return res.status(500).send({ message: "학번를 입력하세요" });
     User.create({
         id: req.body.id,
         password: bcrypt.hashSync(req.body.password, 8),
-        username: req.body.username,
+        userName: req.body.userName,
         major: req.body.major,
-        studentid: req.body.studentid
+        studentId: req.body.studentId
     })
         .then(user => {
             // set default user position to 'not approved'

@@ -14,7 +14,7 @@ const controller = require("../controllers/auth.controller");
 
 // 회원 목록 및 회원정보 수정
 exports.get_Manage_list = (req, res) => {
-    console.log('--------------- get /manager/manage_list ---------------');
+    console.log('--------------- get /manager/manageList ---------------');
     let output = []; // Json array
 
     User.findAll().then(async users => {
@@ -33,7 +33,7 @@ exports.get_Manage_list = (req, res) => {
 };
 
 exports.post_Manage_list = (req, res) => {
-    console.log('--------------- post /manager/manage_list ---------------');
+    console.log('--------------- post /manager/manageList ---------------');
     var execute = req.body.execute;
     if (execute === 0) {
         User.findOne({ where: { studentId: req.body.chairmanstudentId } }).then(async player => {
@@ -411,7 +411,7 @@ exports.post_Announcement = async (req, res) => {
 
 // 신규 가입자 승인
 exports.get_Approve_new_member = (req, res) => {
-    console.log('--------------- get /manager/approve_new_member ---------------');
+    console.log('--------------- get /manager/approveNewMember ---------------');
     let output = []; // Json array
 
     User.findAll().then(async users => {
@@ -436,7 +436,7 @@ exports.get_Approve_new_member = (req, res) => {
 };
 
 exports.post_Approve_new_member = (req, res) => {
-    console.log('--------------- post /manager/approve_new_member ---------------')
+    console.log('--------------- post /manager/approveNewMember ---------------')
     User.findOne({ where: { studentId: req.body.studentId } }).then(user => {
         user.setPositions([2]).then(() => {
             res.status(200).send({ message: "회원 승인 성공!" });

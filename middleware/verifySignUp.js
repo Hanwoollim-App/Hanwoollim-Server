@@ -1,6 +1,6 @@
 /*
     check duplicate Username or Student ID
-    1. check if Id or Studentid is already exist
+    1. check if Id or studentId is already exist
     2. check if potisions in the request is existed
 */
 
@@ -24,10 +24,10 @@ checkDuplicateIdOrStdId = (req, res, next) => {
 
         // still in then()
 
-        // check studentid
+        // check studentId
         User.findOne({
             where: {
-                studentid: req.body.studentid
+                studentId: req.body.studentId
             }
         }).then(user => {
             if (user) {
