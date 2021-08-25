@@ -327,15 +327,31 @@ exports.get_Board = (req, res) => {
     console.log('--------------- get /user/board ---------------');
     let output = []; // Json array
     const now = Date.now();
+    const fs = require('fs');
+    const path = require('path');
+    const fileName = req.query.fileName
+    var fileDownload = false;
+    
     Board.findAll().then(boards => { // 미리보기(제목+만료일)
         for (let j = 0; j < boards.length; j++) {
             var expireDate = new Date(boards[j].expireDate).getTime()
 
             if (now < expireDate) { // expireDate이 현재시간보다  클 경우에만 가져온다
-                output.push({ 'id': boards[j].id, 'title': boards[j].title, 'expireDate': boards[j].expireDate, 'fileUrl': boards[j].fileUrl, 'body': boards[j].body });
+                if (boards[j].fileUpload && fileName == `${boards[j].id}_${boards[j].title}`){
+                    var filePath = path.join(`/Users/jaeman/board_uploaded_file/`, `${boards[j].writer}_${boards[j].title}`)
+                    var readStream = fs.createReadStream(filePath);
+                    // We replaced all the event handlers with a simple call to readStream.pipe()
+                    readStream.pipe(res);
+                    fileDownload = true;
+                }else{
+                    output.push({ 'id': boards[j].id, 'title': boards[j].title, 'expireDate': boards[j].expireDate, 'body': boards[j].body });
+                }
             }
         }
-        res.status(200).send(output);
+        if(!fileDownload){
+            res.status(200).send(output);
+        }
+
     }).catch(err => {
         res.status(500).send({ message: err.message });
     });
@@ -343,16 +359,44 @@ exports.get_Board = (req, res) => {
 
 exports.post_Board = async (req, res) => {
     console.log('--------------- post /user/board ---------------');
-
-    await Board.create({
-        title: req.body.title,
-        expireDate: req.body.expireDate,
-        fileUrl: req.body.fileUrl,
-        body: req.body.body
-    }).catch(err => {
-        res.status(500).send({ message: err.message });
+    var http = require('http');
+    var formidable = require('formidable');
+    var fs = require('fs');
+    let token = req.headers["x-access-token"];
+    jwt.verify(token, config.secret, async (err, decoded) => {
+        if (err) {
+            return res.status(401).send({
+                message: "토큰 오류!"
+            });
+        }
+        userId = decoded.jwt_id;
     });
-    res.status(200).send({ message: "게시글 등록 성공!" });
+    
+
+    var form = new formidable.IncomingForm();
+    form.parse(req, async (err, fields, files) => {
+        await Board.create({
+            title: fields.title,
+            writer: userId,
+            expireDate: fields.expireDate,
+            fileUpload: fields.fileUpload,
+            body: fields.body
+        }).then(()=>{
+                if(fields.fileUpload == true){
+                    var oldpath = files.file.path;
+                    var newpath = `/Users/jaeman/board_uploaded_file/${userId}_${fields.title}`;
+                    fs.rename(oldpath, newpath, (err) => {
+                        if (err) throw err;
+                        res.status(200).send('게시글 등록 성공!, File uploaded to board_uploaded_file!');
+                    })
+                }else{
+                    res.status(200).send({ message: "게시글 등록 성공!" });
+                }
+            
+        }).catch(err => {
+            res.status(500).send({ message: err.message });
+        });
+    });
 };
 
 

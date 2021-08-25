@@ -8,11 +8,14 @@ module.exports = (sequelize, Sequelize) => {
         title: {
             type: Sequelize.STRING
         },
+        writer: {
+            type: Sequelize.STRING
+        },
         expireDate: {
             type: Sequelize.DATE
         },
-        fileUrl: {
-            type: Sequelize.TEXT
+        fileUpload: {
+            type: Sequelize.STRING
         },
         body: {
             type: Sequelize.TEXT
