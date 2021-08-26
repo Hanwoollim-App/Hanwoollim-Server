@@ -61,7 +61,7 @@ const manager = require('./routes/manager.routes');
 app.use('/user', user);
 app.use('/manager', manager);
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}.`);
 });
