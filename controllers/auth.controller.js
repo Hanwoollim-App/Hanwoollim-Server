@@ -19,11 +19,12 @@ exports.signUp = (req, res) => {
     if (req.body.userName==='') req.body.userName=null
     if (req.body.major==='') req.body.major=null
     if (req.body.studentId===0) req.body.studentId=null
-    if (!req.body.id) return res.status(500).send({ message: "아이디 입력하세요" });
-    if (!req.body.password) return res.status(500).send({ message: "비밀번호를 입력하세요" });
-    if (!req.body.userName) return res.status(500).send({ message: "이름을 입력하세요" });
-    if (!req.body.major) return res.status(500).send({ message: "전공을 입력하세요" });
-    if (!req.body.studentId) return res.status(500).send({ message: "학번를 입력하세요" });
+    if (!req.body.id) return res.status(400).send({ message: "아이디 입력하세요" });
+    if (!req.body.password) return res.status(400).send({ message: "비밀번호를 입력하세요" });
+    if (!req.body.userName) return res.status(400).send({ message: "이름을 입력하세요" });
+    if (!req.body.major) return res.status(400).send({ message: "전공을 입력하세요" });
+    if (!req.body.studentId) return res.status(400).send({ message: "학번를 입력하세요" });
+    if (req.body.studentId.toString().length !== 10) return res.status(400).send({ message: "학번은 10자리만 입력가능합니다." });
     User.create({
         id: req.body.id,
         password: bcrypt.hashSync(req.body.password, 8),

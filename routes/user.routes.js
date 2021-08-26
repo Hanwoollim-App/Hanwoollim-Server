@@ -22,7 +22,7 @@ router.get("/board", [authJwt.verifyToken, authJwt.isApproved], controller.get_B
 router.post("/board", [authJwt.verifyToken, authJwt.isApproved], controller.post_Board);
 
 // 개인정보 설정
-router.get("/info", [authJwt.verifyToken, authJwt.isApproved], controller.get_Info);
+router.get("/info", [authJwt.verifyToken], controller.get_Info);
 router.post("/info", [authJwt.verifyToken, authJwt.isApproved], controller.post_Info);
 
 // 개인정보 수정
