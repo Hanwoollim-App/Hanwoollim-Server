@@ -338,7 +338,7 @@ exports.get_Board = (req, res) => {
 
             if (now < expireDate) { // expireDate이 현재시간보다  클 경우에만 가져온다
                 if (boards[j].fileUpload && fileName == `${boards[j].id}_${boards[j].title}`){
-                    var filePath = path.join(`/Users/jaeman/board_uploaded_file/`, `${boards[j].writer}_${boards[j].title}`)
+                    var filePath = path.join(`/home/ubuntu/board_uploaded_file/`, `${boards[j].writer}_${boards[j].title}`)
                     var tempPath = boards[j].fileInfo
                     fs.rename(filePath, tempPath, (err) => {
                         if (err) throw err;
@@ -393,10 +393,10 @@ exports.post_Board = async (req, res) => {
         }).then(()=>{
                 if(fields.fileUpload == true){
                     Board.update({
-                        fileInfo: `/Users/jaeman/board_uploaded_file/`+files.file.name
+                        fileInfo: `/home/ubuntu/board_uploaded_file/`+files.file.name
                     }, { where: { title : fields.title, writer : userId} } ).then(()=>{
                         var oldpath = files.file.path;
-                        var newpath = `/Users/jaeman/board_uploaded_file/${userId}_${fields.title}`;
+                        var newpath = `/home/ubuntu/board_uploaded_file/${userId}_${fields.title}`;
                         fs.rename(oldpath, newpath, (err) => {
                             if (err) throw err;
                             res.status(200).send('게시글 등록 성공!, File uploaded to board_uploaded_file!');
