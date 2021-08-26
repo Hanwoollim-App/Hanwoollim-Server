@@ -353,7 +353,7 @@ exports.get_Board = (req, res) => {
                     })
                     fileDownload = true;
                 }else{
-                    output.push({ 'id': boards[j].id, 'title': boards[j].title, 'expireDate': boards[j].expireDate, 'body': boards[j].body });
+                    output.push({ 'id': boards[j].id, 'title': boards[j].title, 'expireDate': controller.dateFormat(boards[j].expireDate), 'body': boards[j].body });
                 }
             }
         }

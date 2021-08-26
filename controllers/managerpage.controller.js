@@ -375,7 +375,7 @@ exports.get_Announcement = (req, res) => {
 
     Announcement.findAll().then(announcements => { // 미리보기 불러오기(제목, 날짜)
         for (let j = 0; j < announcements.length; j++) {
-            output.push({ 'id': announcements[j].id, 'title': announcements[j].title, 'date': announcements[j].date, 'writer': announcements[j].writer, 'body': announcements[j].body });
+            output.push({ 'id': announcements[j].id, 'title': announcements[j].title, 'date': controller.dateFormat(announcements[j].date), 'writer': announcements[j].writer, 'body': announcements[j].body });
         }
         res.status(200).send(output);
     }).catch(err => {
