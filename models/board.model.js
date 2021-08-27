@@ -14,9 +14,6 @@ module.exports = (sequelize, Sequelize) => {
         expireDate: {
             type: Sequelize.DATE
         },
-        fileUpload: {
-            type: Sequelize.BOOLEAN
-        },
         fileName: {
             type: Sequelize.STRING
         },
