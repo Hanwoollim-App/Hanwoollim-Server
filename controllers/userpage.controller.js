@@ -332,27 +332,29 @@ exports.get_Board = (req, res) => {
     const fileName = req.query.fileName
     var fileDownload = false;
     
+    let token = req.headers["x-access-token"];
+    jwt.verify(token, config.secret, async (err, decoded) => {
+        if (err) {
+            return res.status(401).send({
+                message: "토큰 오류!"
+            });
+        }
+        userId = decoded.jwt_id;
+    });
+
     Board.findAll().then(async boards => { // 미리보기(제목+만료일)
         for (let j = 0; j < boards.length; j++) {
             var expireDate = new Date(boards[j].expireDate).getTime()
 
             if (now < expireDate) { // expireDate이 현재시간보다  클 경우에만 가져온다
-                if (boards[j].fileUpload && fileName == `${boards[j].id}_${boards[j].title}`){
-                    var filePath = path.join(`/home/ubuntu/board_uploaded_file/`, `${boards[j].writer}_${boards[j].title}`)
-                    var tempPath = boards[j].fileInfo
-                    fs.rename(filePath, tempPath, (err) => {
-                        if (err) throw err;
-                        // console.log('id_titile to file_info')
-                    })
-                    var readStream = fs.createReadStream(tempPath);
+                if (boards[j].fileUpload && fileName == `${boards[j].id}_${boards[j].title}`) {
+                    var filePath = path.join(`/Users/jaeman/board_uploaded_file/${userId}_${boards[j].fileName}`)
+                    var readStream = fs.createReadStream(filePath);
                     // We replaced all the event handlers with a simple call to readStream.pipe()
                     await readStream.pipe(res)
-                    fs.rename(tempPath, filePath, (err) => {
-                        if (err) throw err;
-                        // console.log('file_info to id_title')
-                    })
+                    
                     fileDownload = true;
-                }else{
+                } else {
                     output.push({ 'id': boards[j].id, 'title': boards[j].title, 'expireDate': controller.dateFormat(boards[j].expireDate), 'body': boards[j].body });
                 }
             }
@@ -368,7 +370,6 @@ exports.get_Board = (req, res) => {
 
 exports.post_Board = async (req, res) => {
     console.log('--------------- post /user/board ---------------');
-    var http = require('http');
     var formidable = require('formidable');
     var fs = require('fs');
     let token = req.headers["x-access-token"];
@@ -393,10 +394,10 @@ exports.post_Board = async (req, res) => {
         }).then(()=>{
                 if(fields.fileUpload == true){
                     Board.update({
-                        fileInfo: `/home/ubuntu/board_uploaded_file/`+files.file.name
+                        fileName: `${files.file.name}`
                     }, { where: { title : fields.title, writer : userId} } ).then(()=>{
                         var oldpath = files.file.path;
-                        var newpath = `/home/ubuntu/board_uploaded_file/${userId}_${fields.title}`;
+                        var newpath = `/Users/jaeman/board_uploaded_file/${userId}_${files.file.name}`;
                         fs.rename(oldpath, newpath, (err) => {
                             if (err) throw err;
                             res.status(200).send('게시글 등록 성공!, File uploaded to board_uploaded_file!');

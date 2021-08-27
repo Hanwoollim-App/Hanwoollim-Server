@@ -17,7 +17,7 @@ module.exports = (sequelize, Sequelize) => {
         fileUpload: {
             type: Sequelize.BOOLEAN
         },
-        fileInfo: {
+        fileName: {
             type: Sequelize.STRING
         },
         body: {
