@@ -352,7 +352,7 @@ exports.get_Board = (req, res) => {
                     var readStream = fs.createReadStream(filePath);
                     // We replaced all the event handlers with a simple call to readStream.pipe()
                     await readStream.pipe(res)
-                    
+
                     fileDownload = true;
                 } else {
                     output.push({ 'id': boards[j].id, 'title': boards[j].title, 'expireDate': controller.dateFormat(boards[j].expireDate), 'body': boards[j].body });
@@ -389,10 +389,9 @@ exports.post_Board = async (req, res) => {
             title: fields.title,
             writer: userId,
             expireDate: fields.expireDate,
-            fileUpload: fields.fileUpload,
             body: fields.body
         }).then(()=>{
-                if(fields.fileUpload == true){
+                if(files.file){
                     Board.update({
                         fileName: `${files.file.name}`
                     }, { where: { title : fields.title, writer : userId} } ).then(()=>{
@@ -400,7 +399,7 @@ exports.post_Board = async (req, res) => {
                         var newpath = `/Users/jaeman/board_uploaded_file/${userId}_${files.file.name}`;
                         fs.rename(oldpath, newpath, (err) => {
                             if (err) throw err;
-                            res.status(200).send('게시글 등록 성공!, File uploaded to board_uploaded_file!');
+                            res.status(200).send({ message: '게시글 등록 성공!, File uploaded to board_uploaded_file!' });
                         })
                     })
                 }else{
