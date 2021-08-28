@@ -122,20 +122,17 @@ exports.get_Reservation = (req, res) => {
         var output = {}
         if (reservation){
             for (let i = 0; i < reservation.length; i++) {
-                if (reservation[i].dataValues.reservationType==="Together" || reservation[i].dataValues.reservationType==="Mentoring") {
-                    curr_res = reservation[i].dataValues
-                    console.log(curr_res)
-                    output.startDate = controller.dateFormat(curr_res.startDate)
-                    output.reservationType = curr_res.reservationType
-                    for (let w in curr_res) {
-                        if (curr_res[w] !== null && w!== "createdAt" && w!= "updatedAt" && w !== "id" && w !== "startDate" && w !== "reservationType" && w !== "sidArr" && w !== "sidArr" && w !== "session") { // 요일 (MON~SUN) 만 포함한다.
-                            output[w]=[]
-                            output[w].push(await codeToReservation(curr_res.sidArr[w], curr_res.session[w], curr_res[w]));
-                        }
+                curr_res = reservation[i].dataValues
+                console.log(curr_res)
+                output.startDate = controller.dateFormat(curr_res.startDate)
+                output.reservationType = curr_res.reservationType
+                for (let w in curr_res) {
+                    if (curr_res[w] !== null && w !== "createdAt" && w != "updatedAt" && w !== "id" && w !== "startDate" && w !== "reservationType" && w !== "sidArr" && w !== "sidArr" && w !== "session") { // 요일 (MON~SUN) 만 포함한다.
+                        output[w] = []
+                        output[w].push(await codeToReservation(curr_res.sidArr[w], curr_res.session[w], curr_res[w]));
                     }
-                    outputArr.push( JSON.parse(JSON.stringify(output)) ) // reference가 copy되기 때문에 newcopy를 만들어준것
-
                 }
+                outputArr.push(JSON.parse(JSON.stringify(output))) // reference가 copy되기 때문에 newcopy를 만들어준것
             }
         }
         res.status(200).send(outputArr);
