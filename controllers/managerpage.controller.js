@@ -89,7 +89,7 @@ exports.get_Reservation = (req, res) => {
         var endTime = code.endTime;
         var session1 = sessionJson.session1;
         var session2 = sessionJson.session2;
-        var passed = false;
+        var passedArr = [false];
 
         // 갯수 매칭 체크
         //console.log(sidArr.length, Object.keys(startTime).length, Object.keys(session1).length, Object.keys(endTime).length, Object.keys(startTime).length, Object.keys(endTime).length)
@@ -98,8 +98,8 @@ exports.get_Reservation = (req, res) => {
         }
 
         // Check Format
-        passed = controller.checkFormat(startTime, endTime);
-        if (passed) {
+        passedArr = controller.checkFormat(startTime, endTime);
+        if (passedArr[0]===true) {
             for (let i = 0; i < Object.keys(startTime).length; i++) {
                 await User.findOne({ where: { studentId: sidArr[i] } }).then(user => {
                     userName = user.userName;
@@ -109,6 +109,8 @@ exports.get_Reservation = (req, res) => {
 
                 output = { "studentId": sidArr[i], "userName": userName, "startTime": startTime[i], "endTime": endTime[i], "session1": session1[i], "session2": session2[i] } 
             }
+        } else if (passedArr[0]===false){
+            res.status(400).send(passedArr[1])
         }
         return output;
     }
@@ -226,7 +228,7 @@ exports.post_Reservation = (req, res) => {
             }
 
             // 기존 예약이 있을 경우
-            var passed = false;
+            var passedArr = [false];
             current_res = reservation.dataValues // Sequelize를 통해 받아온 구조 분석 후 사용한 것.
             for (let w in current_res) { // Week의 예약 내용 불러오기
                 if (new_reservation[w] !== undefined && w !== "id" && w !== "startDate" && w !== "reservationType" && w !== "sidArr" && w !== "sidArr" && w !== "session") { // 요일 (MON~SUN) 만 포함한다.
@@ -258,7 +260,7 @@ exports.post_Reservation = (req, res) => {
                                 etimeArr.splice(0, 0, new_etime);
                                 session1.splice(0, 0, new_session1);
                                 session2.splice(0, 0, new_session2);
-                                passed = true;
+                                passedArr[0] = true;
                             }
 
                             if (new_stime >= etimeArr[etimeArr.length-1]) { // 맨 뒷자리에 삽입가능한 경우
@@ -266,9 +268,9 @@ exports.post_Reservation = (req, res) => {
                                 etimeArr.splice(etimeArr.length, 0, new_etime);
                                 session1.splice(session1.length, 0, new_session1);
                                 session2.splice(session2.length, 0, new_session2);
-                                passed = true;
+                                passedArr[0] = true;
                             }
-                            if (!passed) {
+                            if (passedArr[0]===false) {
                                 for (let i = 0; i < etimeArr.length; i++) { // 중간에 삽입하는 경우
                                     if (new_stime >= etimeArr[i]) {
                                         if (new_etime <= stimeArr[i + 1]) {
@@ -276,20 +278,21 @@ exports.post_Reservation = (req, res) => {
                                             await etimeArr.splice(i + 1, 0, new_etime);
                                             await session1.splice(i + 1, 0, new_session1);
                                             await session2.splice(i + 1, 0, new_session2);
-                                            passed = true;
+                                            passedArr[0] = true;
                                         }
                                         continue;
                                     }
                                 }
                             }
-                            if (!passed) {
+                            if (passedArr[0]===false) {
                                 res.status(400).send("예약하려는 시간에 이미 예약이 있습니다.")
                                 return
                             }
 
-                            passed = controller.CheckFormat(stimeArr, etimeArr);;
+                            passedArr = controller.CheckFormat(stimeArr, etimeArr);;
                             // 변경 후 포멧확인으로 2차 점검
-                            if (passed){                            output.sidArr[w] = stdid
+                            if (passedArr[0]===true){                            
+                                output.sidArr[w] = stdid
                                 output.sidArr[w].push(studentId)
                                 output[w] = { 'startTime': [], 'endTime': []}
                                 console.log(w,output[w].startTime )
@@ -298,6 +301,8 @@ exports.post_Reservation = (req, res) => {
                                 output.session[w]= {'session1':[],'session2':[]}
                                 output.session[w].session1 = session1
                                 output.session[w].session2 = session2
+                            }else if (passedArr[0]===false){
+                                res.status(400).send(passedArr[1])
                             }
 
                         } else { // 해당reservation date, type의 요일에 예약정보추가
@@ -338,7 +343,7 @@ exports.post_Reservation = (req, res) => {
                 }
             })
 
-            if(passed || passedArr[0]) res.status(200).send({ message: "예약성공!"});
+            if(passedArr[0]===true) res.status(200).send({ message: "예약성공!"});
     
 
         }).catch(err => {
