@@ -53,7 +53,12 @@ app.get("/", (req, res) => {
 
 // routes
 require('./routes/auth.routes')(app);
-require('./routes/homepage.routes')(app);
+
+app.use( (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH');
+    res.header("Access-Control-Allow-Headers", "x-access-token, Origin, Content-Type, Accept");
+    next();
+});
 
 const user = require('./routes/user.routes');
 const manager = require('./routes/manager.routes');

@@ -21,7 +21,7 @@ exports.get_Manage_list = (req, res) => {
         //var output = [];
         for (let j = 0; j < users.length; j++) {
             await users[j].getPositions().then(async position => {
-                if(position[0].name !== 'chairman')
+                if(position[0].name !== 'chairman' && position[0].name !== 'not_approved')
                     output.push({ 'userName': users[j].userName, 'major': users[j].major, 'studentId': users[j].studentId, 'position': position[0].name});
             })
         }
@@ -78,7 +78,7 @@ exports.post_Manage_list = (req, res) => {
 // 고정합주 예약 
 exports.get_Reservation = (req, res) => {
     console.log('--------------- get /manager/reservation ---------------');
-    async function codeToReservation(sidArr, sessionJson, code) {
+    async function codeToReservation(nameArr, sessionJson, code) {
 
         if (!code) {
             res.status(400).send({ message: '입력값이 없습니다' })
@@ -93,7 +93,7 @@ exports.get_Reservation = (req, res) => {
 
         // 갯수 매칭 체크
         //console.log(sidArr.length, Object.keys(startTime).length, Object.keys(session1).length, Object.keys(endTime).length, Object.keys(startTime).length, Object.keys(endTime).length)
-        if (sidArr.length !== Object.keys(startTime).length || Object.keys(session1).length !== Object.keys(endTime).length || Object.keys(startTime).length !== Object.keys(endTime).length) {
+        if (nameArr.length !== Object.keys(startTime).length || Object.keys(session1).length !== Object.keys(endTime).length || Object.keys(startTime).length !== Object.keys(endTime).length) {
             return res.status(400).send({ message: '이름,예약시작시간,예약종료시간,세션 갯수 매칭안됨!' })
         }
 
@@ -101,13 +101,7 @@ exports.get_Reservation = (req, res) => {
         passedArr = controller.checkFormat(startTime, endTime);
         if (passedArr[0]===true) {
             for (let i = 0; i < Object.keys(startTime).length; i++) {
-                await User.findOne({ where: { studentId: sidArr[i] } }).then(user => {
-                    userName = user.userName;
-                }).catch(err => {
-                    res.status(500).send({ message: err.message });
-                });
-
-                output = { "studentId": sidArr[i], "userName": userName, "startTime": startTime[i], "endTime": endTime[i], "session1": session1[i], "session2": session2[i] } 
+                output = { "userName": nameArr[i], "startTime": startTime[i], "endTime": endTime[i], "session1": session1[i], "session2": session2[i] } 
             }
         } else if (passedArr[0]===false){
             res.status(400).send(passedArr[1])
@@ -129,9 +123,9 @@ exports.get_Reservation = (req, res) => {
                 output.startDate = controller.dateFormat(curr_res.startDate)
                 output.reservationType = curr_res.reservationType
                 for (let w in curr_res) {
-                    if (curr_res[w] !== null && w !== "createdAt" && w != "updatedAt" && w !== "id" && w !== "startDate" && w !== "reservationType" && w !== "sidArr" && w !== "sidArr" && w !== "session") { // 요일 (MON~SUN) 만 포함한다.
+                    if (curr_res[w] !== null && w !== "createdAt" && w != "updatedAt" && w !== "id" && w !== "startDate" && w !== "reservationType" && w !== "nameArr" && w !== "session") { // 요일 (MON~SUN) 만 포함한다.
                         output[w] = []
-                        output[w].push(await codeToReservation(curr_res.sidArr[w], curr_res.session[w], curr_res[w]));
+                        output[w].push(await codeToReservation(curr_res.nameArr[w], curr_res.session[w], curr_res[w]));
                     }
                 }
                 outputArr.push(JSON.parse(JSON.stringify(output))) // reference가 copy되기 때문에 newcopy를 만들어준것
@@ -153,7 +147,7 @@ exports.post_Reservation = (req, res) => {
 
     async function reservationToDb(new_reservation) { // json from client
         let token = req.headers["x-access-token"];
-        var studentId;
+        // var studentId;
         jwt.verify(token, config.secret, (err, decoded) => {
             if (err) {
                 return res.status(401).send({
@@ -164,12 +158,12 @@ exports.post_Reservation = (req, res) => {
             userId = decoded.jwt_id;
         });
 
-        await User.findOne({ where: { id: userId } }).then(user => {
-            studentId = user.studentId;
-        }).catch(err => {
-            res.status(500).send({ message: err.message });
-            return;
-        });
+        // await User.findOne({ where: { id: userId } }).then(user => {
+        //     studentId = user.studentId;
+        // }).catch(err => {
+        //     res.status(500).send({ message: err.message });
+        //     return;
+        // });
 
 
 
@@ -180,12 +174,12 @@ exports.post_Reservation = (req, res) => {
                 reservationType: new_reservation.reservationType
             }
         }).then(async reservation => {
-            var output = { 'sidArr': {}, 'session':{}}
+            var output = { 'nameArr': {}, 'session':{}}
             var new_startDate = new_reservation.startDate;
             var new_reservationType = new_reservation.reservationType;
             
 
-            if (reservation==null) { // 해당하는 날짜와 reservationType이 없을 경우 (왜 인지 모르겠지만 !reservation 대신 reservation==0이 먹힌다)--> 그 전에는 findAll을 사용했기 때문
+            if (reservation==null) { // 해당하는 날짜와 reservationType이 없을 경우   (왜 인지 모르겠지만 !reservation 대신 reservation==0이 먹힌다)--> 그 전에는 findAll을 사용했기 때문
                 var passedArr = []
 
                 for (let w in new_reservation){
@@ -195,7 +189,7 @@ exports.post_Reservation = (req, res) => {
                             return res.status(400).send(passedArr[1])
                         }  
                         output[w] = { 'startTime': [], 'endTime': []}
-                        output.sidArr[w] = [studentId]
+                        output.nameArr[w] = [new_reservation.userName]
                         output[w].startTime = []
                         output[w].endTime = []
                         output[w].startTime.push(new_reservation[w].startTime)
@@ -212,7 +206,7 @@ exports.post_Reservation = (req, res) => {
                     await Reservation.create({
                         startDate: new_startDate,
                         reservationType: new_reservationType,
-                        sidArr: output.sidArr,
+                        nameArr: output.nameArr,
                         session: output.session,
                         MON: output.MON,
                         TUE: output.TUE,
@@ -231,7 +225,7 @@ exports.post_Reservation = (req, res) => {
             var passedArr = [false];
             current_res = reservation.dataValues // Sequelize를 통해 받아온 구조 분석 후 사용한 것.
             for (let w in current_res) { // Week의 예약 내용 불러오기
-                if (new_reservation[w] !== undefined && w !== "id" && w !== "startDate" && w !== "reservationType" && w !== "sidArr" && w !== "sidArr" && w !== "session") { // 요일 (MON~SUN) 만 포함한다.
+                if (new_reservation[w] !== undefined && w !== "id" && w !== "startDate" && w !== "reservationType" && w !== "nameArr" && w !== "session") { // 요일 (MON~SUN) 만 포함한다.
                     var new_stime = new_reservation[w].startTime; // int
                     var new_etime = new_reservation[w].endTime; // int
                     var new_session1 = new_reservation[w].session1; // string
@@ -242,7 +236,7 @@ exports.post_Reservation = (req, res) => {
                         var etimeArr = current_res[w].endTime; // json
                         var session1 = current_res.session[w].session1; // json
                         var session2 = current_res.session[w].session2; // json
-                        var stdid = current_res.sidArr[w];
+                        var name = current_res.nameArr[w];
                     }
                 
                     
@@ -292,8 +286,8 @@ exports.post_Reservation = (req, res) => {
                             passedArr = controller.CheckFormat(stimeArr, etimeArr);;
                             // 변경 후 포멧확인으로 2차 점검
                             if (passedArr[0]===true){                            
-                                output.sidArr[w] = stdid
-                                output.sidArr[w].push(studentId)
+                                output.nameArr[w] = name
+                                output.nameArr[w].push(new_reservation.userName)
                                 output[w] = { 'startTime': [], 'endTime': []}
                                 console.log(w,output[w].startTime )
                                 output[w].startTime = stimeArr
@@ -306,8 +300,8 @@ exports.post_Reservation = (req, res) => {
                             }
 
                         } else { // 해당reservation date, type의 요일에 예약정보추가
-                            output.sidArr[w] = stdid
-                            output.sidArr[w].push(studentId)
+                            output.nameArr[w] = name
+                            output.nameArr[w].push(new_reservation.userName)
                             output[w] = { 'startTime': [], 'endTime': []}
                             output[w].startTime = []
                             output[w].endTime = []
@@ -326,7 +320,7 @@ exports.post_Reservation = (req, res) => {
                 {
                     startDate: new_startDate,
                     reservationType: new_reservationType,
-                    sidArr: output.sidArr,
+                    nameArr: output.nameArr,
                     session: output.session,
                     MON: output.MON,
                     TUE: output.TUE,
@@ -355,7 +349,8 @@ exports.post_Reservation = (req, res) => {
 
     var reservation = {
         "startDate": req.body.startDate,
-        "reservationType": req.body.reservationType
+        "reservationType": req.body.reservationType,
+        "userName": req.body.userName
     }
     if(req.body.MON) reservation.MON = req.body.MON
     if(req.body.TUE) reservation.TUE = req.body.TUE

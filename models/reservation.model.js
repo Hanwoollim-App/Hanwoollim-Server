@@ -9,6 +9,9 @@ module.exports = (sequelize, Sequelize) => {
         sidArr: {
             type: Sequelize.JSON
         },
+        nameArr:{
+            type: Sequelize.JSON
+        },
         session: {
             type: Sequelize.JSON
         },
