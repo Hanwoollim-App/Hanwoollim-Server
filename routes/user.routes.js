@@ -21,6 +21,9 @@ router.post("/reservation", [authJwt.verifyToken, authJwt.isApproved], controlle
 router.get("/board", [authJwt.verifyToken, authJwt.isApproved], controller.get_Board);
 router.post("/board", [authJwt.verifyToken, authJwt.isApproved], controller.post_Board);
 
+// 공지사항 가져오기
+router.get("/announcement", [authJwt.verifyToken, authJwt.isApproved], controller.get_Announcement);
+
 // 개인정보 설정
 router.get("/info", [authJwt.verifyToken], controller.get_Info);
 router.post("/info", [authJwt.verifyToken, authJwt.isApproved], controller.post_Info);

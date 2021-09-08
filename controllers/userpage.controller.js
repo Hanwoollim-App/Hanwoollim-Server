@@ -414,6 +414,22 @@ exports.post_Board = async (req, res) => {
 };
 
 
+// 공지사항 등록
+exports.get_Announcement = (req, res) => {
+    console.log('--------------- get /user/announcement ---------------');
+    let output = []; // Json array
+
+    Announcement.findAll().then(announcements => { // 미리보기 불러오기(제목, 날짜)
+        for (let j = 0; j < announcements.length; j++) {
+            output.push({ 'id': announcements[j].id, 'title': announcements[j].title, 'date': controller.dateFormat(announcements[j].date), 'writer': announcements[j].writer, 'body': announcements[j].body });
+        }
+        res.status(200).send(output);
+    }).catch(err => {
+        res.status(500).send({ message: err.message });
+    });
+};
+
+
 // 개인정보 설정
 exports.get_Info = async (req, res) => {
     console.log('--------------- get /user/info ---------------');
