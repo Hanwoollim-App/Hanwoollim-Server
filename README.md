@@ -1,5 +1,5 @@
 # Hanwoollim Application Server
-- 한양대학교 밴드동아리 한울림에서 진행한 동아리멤버 전용 앱 개발 프로젝트입니다.
+ #### 한양대학교 밴드동아리 한울림에서 진행한 동아리멤버 전용 앱 개발 프로젝트입니다.
 
 <br/>
 
@@ -31,6 +31,14 @@
     
 <br/>
 
+# APIs
+- #### User-App API
+   - ##### https://app.swaggerhub.com/apis/Jaemani/Hanwoolim-Server-User/1.0.0
+- #### Manager-App API
+   - ##### https://app.swaggerhub.com/apis/Jaemani/Hanwoolim-Server-Manager/1.0.0
+
+<br/>
+
 # Some important things to know
 - ##### These applications are only made for students in the music club "Hanwoollim" of Hanyang University.
 - ##### Although there are two applications 'User-app' and 'Manager-app', but both operated and controlled by one server. 
@@ -53,7 +61,7 @@
     ###### If everything is okay, the chairman of the Hanwoollim would approve you soon.
 
    ![승인안된화면](https://user-images.githubusercontent.com/39300288/133682476-ca84436d-e95e-4e92-ae30-b4b4e2da6386.png)
-    
+ 
    
 <br/>
 
