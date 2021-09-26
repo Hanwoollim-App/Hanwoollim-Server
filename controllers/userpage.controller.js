@@ -31,6 +31,24 @@ exports.post_Lightning_gathering = (req, res) => {
 exports.get_Reservation = (req, res) => {
     console.log('--------------- get /user/reservation ---------------');
     async function codeToReservation_user(sidArr, sessionJson, code) {
+        let token = req.headers["x-access-token"];
+        var studentId;
+        jwt.verify(token, config.secret, (err, decoded) => {
+            if (err) {
+                return res.status(401).send({
+                    message: "토큰 오류!"
+                });
+
+            }
+            userId = decoded.jwt_id;
+        });
+
+        await User.findOne({ where: { id: userId } }).then(user => {
+            studentId = user.studentId;
+        }).catch(err => {
+            res.status(500).send({ message: err.message });
+            return;
+        });
 
         if (!code) {
             res.status(400).send({ message: '입력값이 없습니다' })
@@ -41,6 +59,7 @@ exports.get_Reservation = (req, res) => {
         var endTime = code.endTime;
         var session1 = sessionJson.session1;
         var session2 = sessionJson.session2;
+        var isMine = false;
         var passedArr = [false];
 
         // 갯수 매칭 체크
@@ -58,8 +77,10 @@ exports.get_Reservation = (req, res) => {
                 }).catch(err => {
                     res.status(500).send({ message: err.message });
                 });
+                if (studentId===sidArr[i]) isMine=true;
+                else isMine=false;
 
-                output = { "studentId": sidArr[i], "name": userName, "startTime": startTime[i], "endTime": endTime[i], "session1": session1[i], "session2": session2[i] }
+                output = { "isMine": isMine, "name": userName, "startTime": startTime[i], "endTime": endTime[i], "session1": session1[i], "session2": session2[i] }
             }
         } else if (passedArr[0]===false){
             res.status(400).send(passedArr[1])
