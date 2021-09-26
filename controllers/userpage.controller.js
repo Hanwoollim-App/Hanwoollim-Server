@@ -200,12 +200,12 @@ exports.post_Reservation = (req, res) => { // 관리자용 앱과 완전히 동�
                 reservationType: new_reservation.reservationType
             }
         }).then(async reservation => {
-            var output = { 'sidArr': {}, 'session': {} }
             var new_startDate = new_reservation.startDate;
             var new_reservationType = new_reservation.reservationType;
 
 
             if (reservation == null) { // 해당하는 날짜와 reservationType이 없을 경우 (왜 인지 모르겠지만 !reservation 대신 reservation==0이 먹힌다)--> 그 전에는 findAll을 사용했기 때문
+                var output = { 'sidArr': {}, 'session': {} }
                 var passedArr = []
 
                 for (let w in new_reservation) {
@@ -247,99 +247,101 @@ exports.post_Reservation = (req, res) => { // 관리자용 앱과 완전히 동�
                 return;
             }
 
-            // 기존 예약이 있을 경우
+            // 해당하는 날짜와 reservationType에 기존 예약이 있을 경우
+            var output = { 'sidArr': {}, 'session': {} }
             var passedArr = [false];
             current_res = reservation.dataValues // Sequelize를 통해 받아온 구조 분석 후 사용한 것.
             for (let w in current_res) { // Week의 예약 내용 불러오기
-                if (new_reservation[w] !== undefined && w !== "id" && w !== "startDate" && w !== "reservationType" && w !== "sidArr" && w !== "sidArr" && w !== "session") { // 요일 (MON~SUN) 만 포함한다.
-                    var new_stime = new_reservation[w].startTime; // int
-                    var new_etime = new_reservation[w].endTime; // int
-                    var new_session1 = new_reservation[w].session1; // string
-                    var new_session2 = new_reservation[w].session2; // string
-
-                    if (current_res[w]) {
-                        var stimearr = current_res[w].startTime; // json
-                        var etimearr = current_res[w].endTime; // json
+                if ( w == 'MON' || w == 'TUE' || w == 'WEN' || w == 'THUR' || w == 'FRI' || w == 'SAT' || w == 'SUN' ) { // 요일 (MON~SUN) 만 포함한다.
+                    if (current_res[w]!==null){
+                        var stimeArr = current_res[w].startTime; // json
+                        var etimeArr = current_res[w].endTime; // json
                         var session1 = current_res.session[w].session1; // json
                         var session2 = current_res.session[w].session2; // json
-                        var stdid = current_res.sidArr[w];
+                        var name = current_res.nameArr[w];
+                        output.nameArr[w] = current_res.nameArr[w];
+                        output.session[w] = current_res.session[w];
                     }
 
+                    if (new_reservation[w] !== undefined){    
+                        var new_stime = new_reservation[w].startTime; // int
+                        var new_etime = new_reservation[w].endTime; // int
+                        var new_session1 = new_reservation[w].session1; // string
+                        var new_session2 = new_reservation[w].session2; // string
+                    
+                        if (Object.keys(new_reservation[w]).length) { // reservation이 존재하는 요일의 reservation json을 불러옴
+                            if (reservation!=0 && current_res[w]!=null) { // 해당요일(w)에 기존 예약이 하나라도 있을 경우
+                                
+                                if (stimeArr.length !== session1.length || etimeArr.length !== session2.length) {
+                                    res.status(400).send("예약시간과 session 갯수가 매칭되지 않습니다.")
+                                    return false
+                                }
 
-                    if (Object.keys(new_reservation[w]).length) { // reservation이 존재하는 요일의 reservation json을 불러옴
+                                if (new_etime <= stimeArr[0]) { // 맨 앞자리에 삽입가능한 경우
+                                    stimeArr.splice(0, 0, new_stime);
+                                    etimeArr.splice(0, 0, new_etime);
+                                    session1.splice(0, 0, new_session1);
+                                    session2.splice(0, 0, new_session2);
+                                    passedArr[0] = true;
+                                }
 
-                        if (reservation != 0 && current_res[w]!=null) { // 해당요일(w)에 기존 예약이 하나라도 있을 경우
-
-                            if (stimearr.length !== session1.length || etimearr.length !== session2.length) {
-                                res.status(400).send("예약시간과 session 갯수가 매칭되지 않습니다.")
-                                return false
-                            }
-
-                            if (new_etime < stimearr[0]) { // 맨 앞자리에 삽입가능한 경우
-                                stimearr.splice(0, 0, new_stime);
-                                etimearr.splice(0, 0, new_etime);
-                                session1.splice(0, 0, new_session1);
-                                session2.splice(0, 0, new_session2);
-                                passedArr[0] = true;
-                            }
-
-                            if (new_stime >= etimearr[etimearr.length - 1]) { // 맨 뒷자리에 삽입가능한 경우
-                                stimearr.splice(stimearr.length, 0, new_stime);
-                                etimearr.splice(etimearr.length, 0, new_etime);
-                                session1.splice(session1.length, 0, new_session1);
-                                session2.splice(session2.length, 0, new_session2);
-                                passedArr[0] = true;
-                            }
-                            if (passedArr[0]===false) {
-                                for (let i = 0; i < etimearr.length; i++) { // 중간에 삽입하는 경우
-                                    if (new_stime >= etimearr[i]) {
-                                        if (new_etime <= stimearr[i + 1]) {
-                                            await stimearr.splice(i + 1, 0, new_stime);
-                                            await etimearr.splice(i + 1, 0, new_etime);
-                                            await session1.splice(i + 1, 0, new_session1);
-                                            await session2.splice(i + 1, 0, new_session2);
-                                            passedArr[0] = true;
+                                if (new_stime >= etimeArr[etimeArr.length-1]) { // 맨 뒷자리에 삽입가능한 경우
+                                    stimeArr.splice(stimeArr.length, 0, new_stime);
+                                    etimeArr.splice(etimeArr.length, 0, new_etime);
+                                    session1.splice(session1.length, 0, new_session1);
+                                    session2.splice(session2.length, 0, new_session2);
+                                    passedArr[0] = true;
+                                }
+                                if (passedArr[0]===false) {
+                                    for (let i = 0; i < etimeArr.length; i++) { // 중간에 삽입하는 경우
+                                        if (new_stime >= etimeArr[i]) {
+                                            if (new_etime <= stimeArr[i + 1]) {
+                                                await stimeArr.splice(i + 1, 0, new_stime);
+                                                await etimeArr.splice(i + 1, 0, new_etime);
+                                                await session1.splice(i + 1, 0, new_session1);
+                                                await session2.splice(i + 1, 0, new_session2);
+                                                passedArr[0] = true;
+                                            }
+                                            continue;
                                         }
-                                        continue;
                                     }
                                 }
-                            }
-                            if (passedArr[0]===false) {
-                                res.status(400).send("예약하려는 시간에 이미 예약이 있습니다.")
-                                return
-                            }
+                                if (passedArr[0]===false) {
+                                    res.status(400).send("예약하려는 시간에 이미 예약이 있습니다.")
+                                    return
+                                }
 
-                            passedArr = controller.checkFormat(stimearr, etimearr);;
-                            // 변경 후 포멧확인으로 2차 점검
-                            if (passedArr[0]===true) {
-                                output.sidArr[w] = stdid
-                                output.sidArr[w].push(studentId)
-                                output[w] = { 'startTime': [], 'endTime': [] }
-                                console.log(w, output[w].startTime)
-                                output[w].startTime = stimearr
-                                output[w].endTime = etimearr
-                                output.session[w] = { 'session1': [], 'session2': [] }
-                                output.session[w].session1 = session1
-                                output.session[w].session2 = session2
-                            }else if (passedArr[0]===false){
-                                res.status(400).send(passedArr[1])
-                            }
+                                passedArr = controller.checkFormat(stimeArr, etimeArr);;
+                                // 변경 후 포멧확인으로 2차 점검
+                                if (passedArr[0]===true){                            
+                                    output.nameArr[w] = name
+                                    output.nameArr[w].push(new_reservation.userName)
+                                    output[w] = { 'startTime': [], 'endTime': []}
+                                    output[w].startTime = stimeArr
+                                    output[w].endTime = etimeArr
+                                    output.session[w]= {'session1':[],'session2':[]}
+                                    output.session[w].session1 = session1
+                                    output.session[w].session2 = session2
+                                }else if (passedArr[0]===false){
+                                    res.status(400).send(passedArr[1])
+                                }
 
-                        } else { // 해당reservation date, type의 요일에 예약정보추가
-                            output.sidArr[w] = stdid
-                            output.sidArr[w].push(studentId)
-                            output[w] = { 'startTime': [], 'endTime': [] }
-                            output[w].startTime = []
-                            output[w].endTime = []
-                            output[w].startTime.push(new_reservation[w].startTime)
-                            output[w].endTime.push(new_reservation[w].endTime)
-                            output.session[w] = { 'session1': [], 'session2': [] }
-                            output.session[w].session1.push(new_reservation[w].session1)
-                            output.session[w].session2.push(new_reservation[w].session2)
+                            } else { // 해당reservation date, type의 요일에 예약정보추가
+                                output.nameArr[w] = []
+                                output.nameArr[w].push(new_reservation.userName)
+                                output[w] = { 'startTime': [], 'endTime': []}
+                                output[w].startTime = []
+                                output[w].endTime = []
+                                output[w].startTime.push(new_reservation[w].startTime)
+                                output[w].endTime.push(new_reservation[w].endTime)
+                                output.session[w]= {'session1':[],'session2':[]}
+                                output.session[w].session1.push(new_reservation[w].session1)
+                                output.session[w].session2.push(new_reservation[w].session2)
+                            }
+                        
                         }
-
                     }
-                }
+                }    
             } // end of for-loop
 
             await Reservation.update(
