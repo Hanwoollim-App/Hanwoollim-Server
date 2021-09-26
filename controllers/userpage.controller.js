@@ -6,6 +6,10 @@ const Board = db.board;
 const Reservation = db.reservation;
 const controller = require("../controllers/auth.controller");
 
+const ubuntu_path = require("../controllers/ubuntu_board_path");
+ubuntu_path.changePath();
+// AWS에서 작동할 경우 board 파일 경로를 변경(AWS에 ./controllers/isAWS 파일이 존재해야함) !! pm2 start --watch 사용불가
+
 // exports.root = (req, res) => {
 //     res.status(200).send({ message: "This is the main page of 'Hanwoolim-User' application." });
 // };

@@ -1,0 +1,16 @@
+var fs = require('fs')
+
+exports.changePath = (req, res) => {
+    if (fs.existsSync('./controllers/isAWS')) {    
+        fs.readFile('./controllers/userpage.controller.js', 'utf8', function (err,data) {
+            if (err) {
+                return console.log(err);
+            }
+            var result = data.replace(/\/Users\/jaeman/g, '/home/ubuntu');
+    
+            fs.writeFile('./controllers/userpage.controller.js', result, 'utf8', function (err) {
+                if (err) return console.log(err);
+            });
+        });
+    }
+}
