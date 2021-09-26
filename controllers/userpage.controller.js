@@ -148,7 +148,7 @@ exports.get_Reservation = (req, res) => {
                     for (let w in curr_res) {
                         if (curr_res[w] !== null && w !== "createdAt" && w != "updatedAt" && w !== "id" && w !== "startDate" && w !== "reservationType" && w !== "nameArr" && w !== "session") { // 요일 (MON~SUN) 만 포함한다.
                             output[w] = []
-                            output[w].push(await codeToReservation_manager(curr_res.nameArr[w], curr_res.session[w], curr_res[w]));
+                            output[w] = await codeToReservation_manager(curr_res.nameArr[w], curr_res.session[w], curr_res[w]);
                         }
                     }
                     outputArr.push(JSON.parse(JSON.stringify(output))) // reference가 copy되기 때문에 newcopy를 만들어준것
@@ -191,7 +191,10 @@ exports.post_Reservation = (req, res) => { // 관리자용 앱과 완전히 동�
             return;
         });
 
-
+        if(new_reservation.reservationType === 'Together' || new_reservation.reservationType === 'Mentoring'){
+            res.status(400).send({ message: "Together/Mentoring ReservationType은 Manager-App에서 실행되어야 합니다."})
+            return;
+        }
 
 
         Reservation.findOne({ // 추가할 내용이 기존에 있는 startDate, reservationType인지 확인
@@ -258,8 +261,8 @@ exports.post_Reservation = (req, res) => { // 관리자용 앱과 완전히 동�
                         var etimeArr = current_res[w].endTime; // json
                         var session1 = current_res.session[w].session1; // json
                         var session2 = current_res.session[w].session2; // json
-                        var name = current_res.nameArr[w];
-                        output.nameArr[w] = current_res.nameArr[w];
+                        var stdid = current_res.sidArr[w];
+                        output.sidArr[w] = current_res.sidArr[w];
                         output.session[w] = current_res.session[w];
                     }
 
@@ -313,9 +316,9 @@ exports.post_Reservation = (req, res) => { // 관리자용 앱과 완전히 동�
 
                                 passedArr = controller.checkFormat(stimeArr, etimeArr);;
                                 // 변경 후 포멧확인으로 2차 점검
-                                if (passedArr[0]===true){                            
-                                    output.nameArr[w] = name
-                                    output.nameArr[w].push(new_reservation.userName)
+                                if (passedArr[0]===true) {
+                                    output.sidArr[w] = stdid
+                                    output.sidArr[w].push(studentId)
                                     output[w] = { 'startTime': [], 'endTime': []}
                                     output[w].startTime = stimeArr
                                     output[w].endTime = etimeArr
@@ -327,8 +330,8 @@ exports.post_Reservation = (req, res) => { // 관리자용 앱과 완전히 동�
                                 }
 
                             } else { // 해당reservation date, type의 요일에 예약정보추가
-                                output.nameArr[w] = []
-                                output.nameArr[w].push(new_reservation.userName)
+                                output.sidArr[w] = []
+                                output.sidArr[w].push(studentId)
                                 output[w] = { 'startTime': [], 'endTime': []}
                                 output[w].startTime = []
                                 output[w].endTime = []

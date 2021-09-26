@@ -198,7 +198,7 @@ exports.get_Reservation = (req, res) => {
                     for (let w in curr_res) {
                         if (curr_res[w] !== null && w !== "createdAt" && w != "updatedAt" && w !== "id" && w !== "startDate" && w !== "reservationType" && w !== "nameArr" && w !== "session") { // 요일 (MON~SUN) 만 포함한다.
                             output[w] = []
-                            output[w].push(await codeToReservation_manager(curr_res.nameArr[w], curr_res.session[w], curr_res[w]));
+                            output[w] = await codeToReservation_manager(curr_res.nameArr[w], curr_res.session[w], curr_res[w]);
                         }
                     }
                     outputArr.push(JSON.parse(JSON.stringify(output))) // reference가 copy되기 때문에 newcopy를 만들어준것
@@ -239,7 +239,10 @@ exports.post_Reservation = (req, res) => {
         //     return;
         // });
 
-
+        if(new_reservation.reservationType === 'Personal'){
+            res.status(400).send({ message: "Personal ReservationType은 User-App에서 실행되어야 합니다."})
+            return;
+        }
 
 
         Reservation.findOne({ // 추가할 내용이 기존에 있는 startDate, reservationType인지 확인
