@@ -78,7 +78,44 @@ exports.post_Manage_list = (req, res) => {
 // 고정합주 예약 
 exports.get_Reservation = (req, res) => {
     console.log('--------------- get /manager/reservation ---------------');
-    async function codeToReservation(nameArr, sessionJson, code) {
+    async function codeToReservation_user(sidArr, sessionJson, code) {
+
+        if (!code) {
+            res.status(400).send({ message: '입력값이 없습니다' })
+            return;
+        }
+        var output = {} // function-out-json
+        var startTime = code.startTime;
+        var endTime = code.endTime;
+        var session1 = sessionJson.session1;
+        var session2 = sessionJson.session2;
+        var passedArr = [false];
+
+        // 갯수 매칭 체크
+        //console.log(sidArr.length, Object.keys(startTime).length, Object.keys(session1).length, Object.keys(endTime).length, Object.keys(startTime).length, Object.keys(endTime).length)
+        if (sidArr.length !== Object.keys(startTime).length || Object.keys(session1).length !== Object.keys(endTime).length || Object.keys(startTime).length !== Object.keys(endTime).length) {
+            return res.status(400).send({ message: '이름,예약시작시간,예약종료시간,세션 갯수 매칭안됨!' })
+        }
+
+        // Check Format
+        passedArr = controller.checkFormat(startTime, endTime);
+        if (passedArr[0]===true) {
+            for (let i = 0; i < Object.keys(startTime).length; i++) {
+                await User.findOne({ where: { studentId: sidArr[i] } }).then(user => {
+                    userName = user.userName;
+                }).catch(err => {
+                    res.status(500).send({ message: err.message });
+                });
+
+                output = { "studentId": sidArr[i], "name": userName, "startTime": startTime[i], "endTime": endTime[i], "session1": session1[i], "session2": session2[i] }
+            }
+        } else if (passedArr[0]===false){
+            res.status(400).send(passedArr[1])
+        }
+        return output;
+    }
+    
+    async function codeToReservation_manager(nameArr, sessionJson, code) {
 
         if (!code) {
             res.status(400).send({ message: '입력값이 없습니다' })
@@ -101,7 +138,7 @@ exports.get_Reservation = (req, res) => {
         passedArr = controller.checkFormat(startTime, endTime);
         if (passedArr[0]===true) {
             for (let i = 0; i < Object.keys(startTime).length; i++) {
-                output = { "userName": nameArr[i], "startTime": startTime[i], "endTime": endTime[i], "session1": session1[i], "session2": session2[i] } 
+                output = { "name": nameArr[i], "startTime": startTime[i], "endTime": endTime[i], "session1": session1[i], "session2": session2[i] } 
             }
         } else if (passedArr[0]===false){
             res.status(400).send(passedArr[1])
@@ -118,17 +155,31 @@ exports.get_Reservation = (req, res) => {
         var output = {}
         if (reservation){
             for (let i = 0; i < reservation.length; i++) {
-                curr_res = reservation[i].dataValues
+                if (reservation[i].dataValues.reservationType === "Personal"){
+                    curr_res = reservation[i].dataValues
                 console.log(curr_res)
                 output.startDate = controller.dateFormat(curr_res.startDate)
                 output.reservationType = curr_res.reservationType
                 for (let w in curr_res) {
-                    if (curr_res[w] !== null && w !== "createdAt" && w != "updatedAt" && w !== "id" && w !== "startDate" && w !== "reservationType" && w !== "nameArr" && w !== "session") { // 요일 (MON~SUN) 만 포함한다.
+                    if (curr_res[w] !== null && w !== "createdAt" && w != "updatedAt" && w !== "id" && w !== "startDate" && w !== "reservationType" && w !== "sidArr" && w !== "sidArr" && w !== "session") { // 요일 (MON~SUN) 만 포함한다.
                         output[w] = []
-                        output[w].push(await codeToReservation(curr_res.nameArr[w], curr_res.session[w], curr_res[w]));
+                        output[w].push(await codeToReservation_user(curr_res.sidArr[w], curr_res.session[w], curr_res[w]));
                     }
                 }
                 outputArr.push(JSON.parse(JSON.stringify(output))) // reference가 copy되기 때문에 newcopy를 만들어준것
+                } else{
+                    curr_res = reservation[i].dataValues
+                    console.log(curr_res)
+                    output.startDate = controller.dateFormat(curr_res.startDate)
+                    output.reservationType = curr_res.reservationType
+                    for (let w in curr_res) {
+                        if (curr_res[w] !== null && w !== "createdAt" && w != "updatedAt" && w !== "id" && w !== "startDate" && w !== "reservationType" && w !== "nameArr" && w !== "session") { // 요일 (MON~SUN) 만 포함한다.
+                            output[w] = []
+                            output[w].push(await codeToReservation_manager(curr_res.nameArr[w], curr_res.session[w], curr_res[w]));
+                        }
+                    }
+                    outputArr.push(JSON.parse(JSON.stringify(output))) // reference가 copy되기 때문에 newcopy를 만들어준것
+                }
             }
         }
         res.status(200).send(outputArr);
@@ -183,8 +234,9 @@ exports.post_Reservation = (req, res) => {
                 var passedArr = []
 
                 for (let w in new_reservation){
-                    if (w !== "startDate" && w !== "reservationType") {
-                        passedArr = controller.CheckFormat([new_reservation[w].startTime], [new_reservation[w].endTime]);;
+                    if (w !== "startDate" && w !== "reservationType" && w!== "userName") {
+                        console.log(new_reservation, w)
+                        passedArr = controller.checkFormat([new_reservation[w].startTime], [new_reservation[w].endTime]);
                         if (passedArr[0]===false) {
                             return res.status(400).send(passedArr[1])
                         }  
@@ -283,7 +335,7 @@ exports.post_Reservation = (req, res) => {
                                 return
                             }
 
-                            passedArr = controller.CheckFormat(stimeArr, etimeArr);;
+                            passedArr = controller.checkFormat(stimeArr, etimeArr);;
                             // 변경 후 포멧확인으로 2차 점검
                             if (passedArr[0]===true){                            
                                 output.nameArr[w] = name
