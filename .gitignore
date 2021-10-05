@@ -1,4 +1,4 @@
 ./.env
 ./.vscode/
-isAWS
+controllers/isAWS
 node_modules/
