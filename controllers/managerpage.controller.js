@@ -184,12 +184,13 @@ exports.get_Reservation = (req, res) => {
                     output.startDate = controller.dateFormat(curr_res.startDate)
                     output.reservationType = curr_res.reservationType
                     for (let w in curr_res) {
-                        if (curr_res[w] !== null && w !== "createdAt" && w != "updatedAt" && w !== "id" && w !== "startDate" && w !== "reservationType" && w !== "sidArr" && w !== "sidArr" && w !== "session") { // 요일 (MON~SUN) 만 포함한다.
+                        if (curr_res[w] !== null && w !== "createdAt" && w != "updatedAt" && w !== "id" && w !== "startDate" && w !== "reservationType" && w !== "sidArr" && w !== "session") { // 요일 (MON~SUN) 만 포함한다.
                             output[w] = []
                             output[w] = await codeToReservation_user(curr_res.sidArr[w], curr_res.session[w], curr_res[w]);
                         }
                     }
                     outputArr.push(JSON.parse(JSON.stringify(output))) // reference가 copy되기 때문에 newcopy를 만들어준것
+                    output={} // 같은 날짜에 Personal이 테이블에서 아래에 위치해있을 때 다른 Type이 섞여 출력되는 버그(그 반대는 정상실행됨)
                 } else{
                     curr_res = reservation[i].dataValues
                     console.log(curr_res)
@@ -202,6 +203,7 @@ exports.get_Reservation = (req, res) => {
                         }
                     }
                     outputArr.push(JSON.parse(JSON.stringify(output))) // reference가 copy되기 때문에 newcopy를 만들어준것
+                    output={}
                 }
             }
         }
