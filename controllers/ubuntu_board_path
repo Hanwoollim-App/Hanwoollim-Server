@@ -1,7 +1,7 @@
 var fs = require('fs')
 
 exports.changePath = (req, res) => {
-    if (fs.existsSync('./controllers/isAWS')) {    
+    if (fs.existsSync('isAWS')) {    
         fs.readFile('./controllers/userpage.controller.js', 'utf8', function (err,data) {
             if (err) {
                 return console.log(err);
