@@ -1,7 +1,4 @@
 ./.env
 ./.vscode/
 controllers/isAWS
-app.js
 node_modules/
-package-lock.json
-package.json
