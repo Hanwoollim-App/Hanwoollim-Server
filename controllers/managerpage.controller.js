@@ -240,7 +240,10 @@ exports.post_Reservation = (req, res) => {
         //     res.status(500).send({ message: err.message });
         //     return;
         // });
-
+        if(!new_reservation.userName){
+            res.status(400).send({ message: "대표자 이름 또는 멘토 이름을 입력해주세요."})
+            return;
+        }
         if(new_reservation.reservationType === 'Personal'){
             res.status(400).send({ message: "Personal ReservationType은 User-App에서 실행되어야 합니다."})
             return;
