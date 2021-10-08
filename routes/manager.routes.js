@@ -15,6 +15,7 @@ router.post("/manageList", [authJwt.verifyToken, authJwt.isChairman], controller
 // 고정합주 예약 (관리자, 집행기)
 router.get("/reservation", [authJwt.verifyToken, authJwt.isAdminOrChairman], controller.get_Reservation);
 router.post("/reservation", [authJwt.verifyToken, authJwt.isAdminOrChairman], controller.post_Reservation);
+router.delete("/reservation/delete/:startDate/:reservationType/:day/:startTime", [authJwt.verifyToken, authJwt.isAdminOrChairman], controller.delete_Reservation)
 
 // 공지사항 등록 (관리자)
 router.get("/announcement", [authJwt.verifyToken, authJwt.isApproved], controller.get_Announcement);

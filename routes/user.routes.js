@@ -16,6 +16,7 @@ router.post("/lightningGathering", [authJwt.verifyToken, authJwt.isApproved], co
 // 예약하기
 router.get("/reservation", [authJwt.verifyToken, authJwt.isApproved], controller.get_Reservation);
 router.post("/reservation", [authJwt.verifyToken, authJwt.isApproved], controller.post_Reservation);
+router.delete("/reservation/delete/:startDate/:reservationType/:day/:startTime", [authJwt.verifyToken, authJwt.isAdminOrChairman], controller.delete_Reservation)
 
 // 자료게시판
 router.get("/board", [authJwt.verifyToken, authJwt.isApproved], controller.get_Board);

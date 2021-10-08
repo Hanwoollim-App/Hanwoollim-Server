@@ -176,12 +176,9 @@ exports.get_Reservation = (req, res) => {
 
 exports.post_Reservation = async (req, res) => { // 관리자용 앱과 완전히 동일
     console.log('--------------- post /user/reservation ---------------');
-    const controller = require("./auth.controller");
-    var jwt = require("jsonwebtoken");
-    const config = require("../config/auth.config");
-
+    let jwt = require("jsonwebtoken");
     let token = req.headers["x-access-token"];
-    var studentId;
+    let studentId;
     jwt.verify(token, config.secret, (err, decoded) => {
         if (err) {
             return res.status(401).send({
@@ -388,16 +385,46 @@ exports.post_Reservation = async (req, res) => { // 관리자용 앱과 완전�
 
     }
 
-    async function deleteReservation(del_reservation){
+    var reservation = {
+        "startDate": req.body.startDate,
+        "reservationType": req.body.reservationType
+    }
+    if(req.body.MON) reservation.MON = req.body.MON
+    if(req.body.TUE) reservation.TUE = req.body.TUE
+    if(req.body.WEN) reservation.WEN = req.body.WEN
+    if(req.body.THUR) reservation.THUR = req.body.THUR
+    if(req.body.FRI) reservation.FRI = req.body.FRI
+    if(req.body.SAT) reservation.SAT = req.body.SAT
+    if(req.body.SUN) reservation.SUN = req.body.SUN
 
-        function removeByIndex(arr, index) {
-            if (index > -1) {
-              arr.splice(index, 1);
-            }else{
-                return res.status(400).send({ message: "입력 오류입니다. 다시 확인해주세요" }) // .indexf() 에서 원소가 없을 경우 -1가 나온다
-            }
-            return arr;
+    reservationToDb(reservation)
+
+};
+
+exports.delete_Reservation = async (req, res) => {
+    console.log('--------------- delete /user/reservation ---------------');
+    let jwt = require("jsonwebtoken");
+
+    let token = req.headers["x-access-token"];
+    let studentId;
+    jwt.verify(token, config.secret, (err, decoded) => {
+        if (err) {
+            return res.status(401).send({
+                message: "토큰 오류!"
+            });
+
         }
+        userId = decoded.jwt_id;
+    });
+
+    await User.findOne({ where: { id: userId } }).then(user => {
+        studentId = user.studentId;
+    }).catch(err => {
+        res.status(500).send({ message: err.message });
+        return;
+    });
+
+    async function deleteReservation(del_reservation){
         
         if(del_reservation.reservationType === 'Together' || del_reservation.reservationType === 'Mentoring'){
             res.status(400).send({ message: "Together/Mentoring ReservationType은 Manager-App에서 실행되어야 합니다."})
@@ -416,26 +443,32 @@ exports.post_Reservation = async (req, res) => { // 관리자용 앱과 완전�
                 return res.status(400).send({ message: "삭제 대상인 startDate/reservationType이 존재하지 않습니다." })
             }
 
-            let output = {};
             let passed = false;
+            let empty = false;
+
             current_res = reservation.dataValues
             for (let w in current_res) { // Week의 예약 내용 불러오기
                 // console.log(current_res[w])
-                if ( w == 'MON' || w == 'TUE' || w == 'WEN' || w == 'THUR' || w == 'FRI' || w == 'SAT' || w == 'SUN' ) { // 요일 (MON~SUN) 만 포함한다.
-                    if (current_res[w]!==null && del_reservation[w]!==undefined) {
-                        index = current_res.sidArr[w].indexOf(studentId)
+                if ( w == del_reservation.day ){
 
-                        if (current_res.sidArr[w][index] === studentId
-                            && current_res.session[w].session1[index] == del_reservation[w].session1 // cur 에는 null 이 저장, req.body에 key가 없으면 undefined가 저장되므로 '==' 로 비교
-                            && current_res.session[w].session2[index] == del_reservation[w].session2
-                            && current_res[w].startTime[index] === del_reservation[w].startTime
-                            && current_res[w].endTime[index] === del_reservation[w].endTime ){
+                    if (current_res[w]==null){
+
+                        return res.status(400).send({ message: "입력하신 요일에 기존예약이 존재하지 않습니다." })
+
+                    }else{
+
+                        index = current_res[w].startTime.indexOf(del_reservation.startTime)
+                        
+                        if (index > -1){
                             
-                            removeByIndex(current_res.sidArr[w], index)
-                            removeByIndex(current_res.session[w].session1, index)
-                            removeByIndex(current_res[w].startTime, index)
-                            removeByIndex(current_res[w].endTime, index)
-                            removeByIndex(current_res.session[w].session2, index)
+                            if (current_res.sidArr[w][index]!==studentId) res.status(400).send({ message: "본인만 삭제할 수 있습니다." })
+                            
+                            current_res.sidArr[w].splice(index, 1)
+                            current_res.session[w].session1.splice(index, 1)
+                            current_res.session[w].session2.splice(index, 1)
+                            current_res[w].startTime.splice(index, 1)
+                            current_res[w].endTime.splice(index, 1)
+                            
 
                             // 예약 갯수가 0이 될 경우 [] 또는 {}를 반환하지 않게 하기 위해 포멧을 맞춰준다
                             if (current_res.sidArr[w].length==0) delete current_res.sidArr[w]
@@ -446,56 +479,55 @@ exports.post_Reservation = async (req, res) => { // 관리자용 앱과 완전�
 
                             if (Object.keys(current_res[w]).length == 0) current_res[w] = null
                             if (Object.keys(current_res.session[w]).length == 0) delete current_res.session[w]
-
+                            
+                            if (Object.keys(current_res.sidArr).length == 0) empty=true;
+                                
 
                             passed = true
 
                         }else{
                             passed = false
-                            return res.status(400).send({ message: "입력 오류입니다. 다시 확인해주세요" })
+                            return res.status(400).send({ message: "입력하신 날짜에 startTime이 존재하지 않습니다." })
                         }
 
 
 
-                    }else if ( current_res[w]==null && del_reservation[w]==undefined ||current_res[w]!==null && del_reservation[w]==undefined){
-                        continue; // 기존에 있지만 삭제지정하지 않았거나, 기존에도 없으며 지정도 안 한 경우
-                    }else{
-                        passed = false
-                        return res.status(400).send({ message: "선택하신 요일에 기존예약이 존재하지 않습니다." })
                     }
                 }
             
             }
 
             if(passed===true){
-                output.sidArr = current_res.sidArr
-                output.session = current_res.session
-                output.MON = current_res.MON
-                output.TUE = current_res.TUE
-                output.WEN = current_res.WEN
-                output.THUR = current_res.THUR
-                output.FRI = current_res.FRI
-                output.SAT = current_res.SAT
-                output.SUN = current_res.SUN
-
-                await Reservation.update(
-                    {
-                        sidArr: output.sidArr,
-                        session: output.session,
-                        MON: output.MON,
-                        TUE: output.TUE,
-                        WEN: output.WEN,
-                        THUR: output.THUR,
-                        FRI: output.FRI,
-                        SAT: output.SAT,
-                        SUN: output.SUN,
-                        
-                    }, {
-                    where: {
-                        startDate: Date.parse(del_reservation.startDate),
-                        reservationType: del_reservation.reservationType
-                    }
-                })
+                
+                if(empty===true){
+                    await Reservation.destroy({
+                        where: {
+                            startDate: Date.parse(del_reservation.startDate),
+                            reservationType: del_reservation.reservationType
+                        }
+                    })
+                }else{
+                    await Reservation.update(
+                        {
+                            startDate: Date.parse(current_res.startDate),
+                            reservationType: current_res.reservationType,
+                            sidArr: current_res.sidArr,
+                            session: current_res.session,
+                            MON: current_res.MON,
+                            TUE: current_res.TUE,
+                            WEN: current_res.WEN,
+                            THUR: current_res.THUR,
+                            FRI: current_res.FRI,
+                            SAT: current_res.SAT,
+                            SUN: current_res.SUN,
+                            
+                        }, {
+                        where: {
+                            startDate: Date.parse(del_reservation.startDate),
+                            reservationType: del_reservation.reservationType
+                        }
+                    })
+                }
 
                 res.status(200).send({ message: "삭제성공!"});
             }
@@ -507,26 +539,18 @@ exports.post_Reservation = async (req, res) => { // 관리자용 앱과 완전�
         });
     }
 
+
+
     var reservation = {
-        "startDate": req.body.startDate,
-        "reservationType": req.body.reservationType
+        "startDate": req.params['startDate'],
+        "reservationType": req.params['reservationType'],
+        "day": req.params['day'],
+        "startTime": parseInt(req.params['startTime'])
     }
-    if(req.body.MON) reservation.MON = req.body.MON
-    if(req.body.TUE) reservation.TUE = req.body.TUE
-    if(req.body.WEN) reservation.WEN = req.body.WEN
-    if(req.body.THUR) reservation.THUR = req.body.THUR
-    if(req.body.FRI) reservation.FRI = req.body.FRI
-    if(req.body.SAT) reservation.SAT = req.body.SAT
-    if(req.body.SUN) reservation.SUN = req.body.SUN
 
-    if(req.body.delete){
-        deleteReservation(reservation)
-    }else{
-        reservationToDb(reservation)
-    }
-};
+    deleteReservation(reservation);
 
-
+}
 // 자료게시판
 exports.get_Board = (req, res) => {
     console.log('--------------- get /user/board ---------------');
