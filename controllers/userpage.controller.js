@@ -268,7 +268,7 @@ exports.post_Reservation = async (req, res) => { // 관리자용 앱과 완전�
                         var etimeArr = current_res[w].endTime; // json
                         var session1 = current_res.session[w].session1; // json
                         var session2 = current_res.session[w].session2; // json
-                        var stdid = current_res.sidArr[w];
+                        var sidArr = current_res.sidArr[w];
                         output.sidArr[w] = current_res.sidArr[w];
                         output.session[w] = current_res.session[w];
                     }
@@ -292,6 +292,7 @@ exports.post_Reservation = async (req, res) => { // 관리자용 앱과 완전�
                                     etimeArr.splice(0, 0, new_etime);
                                     session1.splice(0, 0, new_session1);
                                     session2.splice(0, 0, new_session2);
+                                    sidArr.splice(0, 0, studentId);
                                     passedArr[0] = true;
                                 }
 
@@ -300,6 +301,7 @@ exports.post_Reservation = async (req, res) => { // 관리자용 앱과 완전�
                                     etimeArr.splice(etimeArr.length, 0, new_etime);
                                     session1.splice(session1.length, 0, new_session1);
                                     session2.splice(session2.length, 0, new_session2);
+                                    sidArr.splice(sidArr.length, 0, studentId);
                                     passedArr[0] = true;
                                 }
                                 if (passedArr[0]===false) {
@@ -310,6 +312,7 @@ exports.post_Reservation = async (req, res) => { // 관리자용 앱과 완전�
                                                 await etimeArr.splice(i + 1, 0, new_etime);
                                                 await session1.splice(i + 1, 0, new_session1);
                                                 await session2.splice(i + 1, 0, new_session2);
+                                                await sidArr.splice(i + 1, 0, studentId)
                                                 passedArr[0] = true;
                                             }
                                             continue;
@@ -324,8 +327,7 @@ exports.post_Reservation = async (req, res) => { // 관리자용 앱과 완전�
                                 passedArr = controller.checkFormat(stimeArr, etimeArr);;
                                 // 변경 후 포멧확인으로 2차 점검
                                 if (passedArr[0]===true) {
-                                    output.sidArr[w] = stdid
-                                    output.sidArr[w].push(studentId)
+                                    output.sidArr[w] = sidArr
                                     output[w] = { 'startTime': [], 'endTime': []}
                                     output[w].startTime = stimeArr
                                     output[w].endTime = etimeArr

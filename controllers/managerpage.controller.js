@@ -303,7 +303,7 @@ exports.post_Reservation = (req, res) => {
                         var etimeArr = current_res[w].endTime; // json
                         var session1 = current_res.session[w].session1; // json
                         var session2 = current_res.session[w].session2; // json
-                        var name = current_res.nameArr[w];
+                        var nameArr = current_res.nameArr[w];
                         output.nameArr[w] = current_res.nameArr[w];
                         output.session[w] = current_res.session[w];
                     }
@@ -313,6 +313,7 @@ exports.post_Reservation = (req, res) => {
                         var new_etime = new_reservation[w].endTime; // int
                         var new_session1 = new_reservation[w].session1; // string
                         var new_session2 = new_reservation[w].session2; // string
+                        let new_name = new_reservation.userName
                     
                         if (Object.keys(new_reservation[w]).length) { // reservation이 존재하는 요일의 reservation json을 불러옴
                             if (reservation!=0 && current_res[w]!=null) { // 해당요일(w)에 기존 예약이 하나라도 있을 경우
@@ -327,6 +328,7 @@ exports.post_Reservation = (req, res) => {
                                     etimeArr.splice(0, 0, new_etime);
                                     session1.splice(0, 0, new_session1);
                                     session2.splice(0, 0, new_session2);
+                                    nameArr.splice(0, 0, new_name)
                                     passedArr[0] = true;
                                 }
 
@@ -335,6 +337,7 @@ exports.post_Reservation = (req, res) => {
                                     etimeArr.splice(etimeArr.length, 0, new_etime);
                                     session1.splice(session1.length, 0, new_session1);
                                     session2.splice(session2.length, 0, new_session2);
+                                    nameArr.splice(nameArr.length, 0, new_name);
                                     passedArr[0] = true;
                                 }
                                 if (passedArr[0]===false) {
@@ -345,6 +348,7 @@ exports.post_Reservation = (req, res) => {
                                                 await etimeArr.splice(i + 1, 0, new_etime);
                                                 await session1.splice(i + 1, 0, new_session1);
                                                 await session2.splice(i + 1, 0, new_session2);
+                                                await nameArr.splice(i + 1, 0, new_name);
                                                 passedArr[0] = true;
                                             }
                                             continue;
@@ -359,8 +363,7 @@ exports.post_Reservation = (req, res) => {
                                 passedArr = controller.checkFormat(stimeArr, etimeArr);;
                                 // 변경 후 포멧확인으로 2차 점검
                                 if (passedArr[0]===true){                            
-                                    output.nameArr[w] = name
-                                    output.nameArr[w].push(new_reservation.userName)
+                                    output.nameArr[w] = nameArr
                                     output[w] = { 'startTime': [], 'endTime': []}
                                     output[w].startTime = stimeArr
                                     output[w].endTime = etimeArr
